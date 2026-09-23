@@ -1809,6 +1809,57 @@ footer {
 .application-form .form-grid {
   align-items: start;
 }
+.busy-date-picker {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.busy-date-picker > div {
+  flex: 1;
+  min-width: 165px;
+}
+.busy-date-picker .secondary-button {
+  margin: 0;
+  min-height: 44px;
+}
+.busy-date-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.busy-date-tags li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 10px;
+  background: #eaf0e1;
+  border: 1px solid #c4d0b9;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.busy-date-tags button {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 34px;
+  background: transparent;
+  border: 0;
+}
+.application-form .field:has(#application-description) .character-count {
+  position: static;
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+}
+.application-form .choice-chip:has(input:focus-visible) {
+  outline: 3px solid #668343;
+  outline-offset: 3px;
+}
 .platform-panel input:not([type='checkbox']),
 .platform-panel select,
 .platform-panel textarea,

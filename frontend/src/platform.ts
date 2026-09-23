@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import type { Options } from './contracts'
+import { formatDate, type Options } from './contracts'
 
 export const applicationSchema = z.object({
   name: z.string().trim().min(2).max(120),
@@ -15,7 +15,7 @@ export const applicationSchema = z.object({
     .string()
     .trim()
     .max(254)
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+    .regex(/^[^@\s]+@[^@\s.]+(?:\.[^@\s.]+)+$/),
   synthetic: z.boolean(),
 })
 export type Application = z.infer<typeof applicationSchema>
@@ -46,7 +46,8 @@ export const applicationMessages: Record<ApplicationField, string> = {
   event_formats: 'Выберите хотя бы один формат мероприятия.',
   languages: 'Выберите хотя бы один язык.',
   price_from_kzt: 'Цена должна быть целой: от 1 до 1 000 000 000 ₸.',
-  max_hours: 'Укажите от 0 до 24 часов, не включая 0, или оставьте поле пустым.',
+  max_hours:
+    'Укажите число больше 0 и не больше 24. Пустое поле означает неприменимость длительности.',
   busy_dates: 'Укажите до 100 уникальных дат YYYY-MM-DD в доступном календаре.',
   description: 'Расскажите об услугах: от 30 до 3000 символов.',
   contact_email: 'Укажите корректный email, не больше 254 символов.',
@@ -54,14 +55,39 @@ export const applicationMessages: Record<ApplicationField, string> = {
 }
 export function applicationPayload(form: ApplicationForm): Application {
   return {
-    ...form,
     name: form.name.trim(),
+    city: form.city,
+    categories: form.categories,
+    event_formats: form.event_formats,
+    languages: form.languages,
+    synthetic: form.synthetic,
     description: form.description.trim(),
     contact_email: form.contact_email.trim(),
     price_from_kzt: Number(form.price_from_kzt.replace(/\s/g, '')),
     max_hours: form.max_hours.trim() ? Number(form.max_hours.replace(',', '.')) : null,
-    busy_dates: form.busy_dates.trim() ? form.busy_dates.split(/[,;\s]+/).filter(Boolean) : [],
+    busy_dates: parseBusyDates(form.busy_dates),
   }
+}
+export function parseBusyDates(value: string): string[] {
+  return value.trim() ? value.split(/[,;\s]+/).filter(Boolean) : []
+}
+export function busyDatesError(value: string, calendar: Options['calendar']): string | undefined {
+  const dates = parseBusyDates(value)
+  if (dates.length > 100) return 'Можно указать не больше 100 занятых дат.'
+  if (dates.some((date) => !z.iso.date().safeParse(date).success))
+    return (
+      'Проверьте даты: нужен формат ГГГГ-ММ-ДД и существующий день, например ' + calendar.min + '.'
+    )
+  if (new Set(dates).size !== dates.length)
+    return 'В списке есть повторяющиеся даты. Оставьте каждую дату один раз.'
+  if (dates.some((date) => date < calendar.min || date > calendar.max))
+    return (
+      'Все занятые даты должны быть в диапазоне ' +
+      formatDate(calendar.min, true) +
+      ' — ' +
+      formatDate(calendar.max, true) +
+      '.'
+    )
 }
 export function validateApplication(form: ApplicationForm, options: Options): ApplicationErrors {
   const payload = applicationPayload(form)
@@ -85,11 +111,15 @@ export function validateApplication(form: ApplicationForm, options: Options): Ap
     )
       errors[key] = applicationMessages[key]
   }
-  if (
-    new Set(payload.busy_dates).size !== payload.busy_dates.length ||
-    payload.busy_dates.some((date) => date < options.calendar.min || date > options.calendar.max)
-  )
-    errors.busy_dates = applicationMessages.busy_dates
+  const calendarError = busyDatesError(form.busy_dates, options.calendar)
+  if (calendarError) errors.busy_dates = calendarError
+  for (const key of ['name', 'description', 'contact_email'] as const) {
+    const invalid = [...payload[key]].some((char) => {
+      const code = char.charCodeAt(0)
+      return code === 127 || (code < 32 && !(key === 'description' && '\n\r\t'.includes(char)))
+    })
+    if (invalid) errors[key] = 'Удалите недопустимые управляющие символы из текста.'
+  }
   return errors
 }
 export const profileSchema = applicationSchema.omit({ contact_email: true }).extend({
@@ -186,7 +216,9 @@ async function request<T>(
                 ? 'Такая анкета уже отправлена. Дождитесь решения администратора.'
                 : 'Данные изменились или такая анкета уже существует. Обновите список перед повторным действием.',
             422: 'Проверьте отмеченные поля и повторите действие.',
-            503: 'Панель пока недоступна: администратор должен настроить доступ на сервере.',
+            503: path.startsWith('/api/admin/')
+              ? 'Панель пока недоступна: администратор должен настроить доступ на сервере.'
+              : 'Приём анкет временно недоступен. Введённые данные сохранены на странице; попробуйте позже.',
           } as Record<number, string>
         )[response.status] || 'Сервис временно недоступен. Попробуйте ещё раз.'
       throw new PlatformError(message, response.status, fields)

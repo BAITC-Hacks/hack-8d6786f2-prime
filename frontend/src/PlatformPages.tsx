@@ -8,11 +8,14 @@ import {
   ShieldCheck,
   Trash2,
   UsersRound,
+  X,
 } from 'lucide-react'
 import { capitalize, formatDate, formatMoney, type Options } from './contracts'
 import {
   applicationPayload,
   blankApplication,
+  busyDatesError,
+  parseBusyDates,
   platformApi,
   PlatformError,
   validateApplication,
@@ -70,8 +73,17 @@ export function ContractorForm({
   const [errors, setErrors] = useState<ApplicationErrors>({})
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [dateToAdd, setDateToAdd] = useState('')
+  const [calendarError, setCalendarError] = useState('')
   const locked = useRef(false)
+  const mounted = useRef(true)
   const element = useRef<HTMLFormElement>(null)
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
   const update = <K extends ApplicationField>(key: K, value: ApplicationForm[K]) => {
     setForm((old) => ({ ...old, [key]: value }))
     setErrors((old) => ({ ...old, [key]: undefined }))
@@ -92,7 +104,7 @@ export function ContractorForm({
     value: form[name],
     'aria-invalid': Boolean(errors[name]),
     'aria-describedby': [
-      'application-' + name + '-hint',
+      name !== 'city' ? 'application-' + name + '-hint' : '',
       errors[name] ? 'application-' + name + '-error' : '',
     ]
       .filter(Boolean)
@@ -116,21 +128,45 @@ export function ContractorForm({
     }
     locked.current = true
     setBusy(true)
+    let failedFields: ApplicationErrors = {}
     try {
       await onSubmit(applicationPayload(form))
     } catch (failure) {
+      if (!mounted.current) return
       const apiError =
         failure instanceof PlatformError
           ? failure
           : new PlatformError('Не удалось отправить анкету. Попробуйте ещё раз.')
       setError(apiError.message)
       setErrors(apiError.fields)
-      focusFirst(apiError.fields)
+      failedFields = apiError.fields
     } finally {
       locked.current = false
-      setBusy(false)
+      if (mounted.current) {
+        setBusy(false)
+        requestAnimationFrame(() => {
+          if (mounted.current) focusFirst(failedFields)
+        })
+      }
     }
   }
+  const addBusyDate = () => {
+    if (!dateToAdd) {
+      setCalendarError('Выберите дату в календаре.')
+      return
+    }
+    const dates = [...parseBusyDates(form.busy_dates), dateToAdd]
+    const problem = busyDatesError(dates.join(', '), options.calendar)
+    if (problem) {
+      setCalendarError(problem)
+      return
+    }
+    update('busy_dates', dates.join(', '))
+    setCalendarError('')
+    setDateToAdd('')
+  }
+  const busyDates = parseBusyDates(form.busy_dates)
+  const validBusyDates = !busyDatesError(form.busy_dates, options.calendar)
   const multiselect = (
     key: 'categories' | 'event_formats' | 'languages',
     title: string,
@@ -138,6 +174,7 @@ export function ContractorForm({
   ) => (
     <fieldset
       className="choice-field"
+      aria-invalid={Boolean(errors[key])}
       aria-describedby={errors[key] ? `application-${key}-error` : undefined}
     >
       <legend>
@@ -195,7 +232,7 @@ export function ContractorForm({
         >
           <input
             {...attrs('name')}
-            autoComplete="name"
+            autoComplete="off"
             maxLength={120}
             placeholder="Как вас представить заказчику?"
             required
@@ -219,7 +256,7 @@ export function ContractorForm({
             <input
               {...attrs('contact_email')}
               type="email"
-              autoComplete="email"
+              autoComplete="off"
               maxLength={254}
               placeholder="name@example.com"
               required
@@ -283,7 +320,56 @@ export function ContractorForm({
           error={errors.busy_dates}
           hint={`Необязательно. До 100 дат YYYY-MM-DD через запятую или с новой строки. Календарь: ${formatDate(options.calendar.min, true)} — ${formatDate(options.calendar.max, true)}.`}
         >
-          <textarea {...attrs('busy_dates')} rows={3} placeholder="2026-11-14, 2026-11-21" />
+          <div className="busy-date-picker">
+            <div>
+              <label htmlFor="busy-date-picker">Выбрать дату в календаре</label>
+              <input
+                id="busy-date-picker"
+                type="date"
+                min={options.calendar.min}
+                max={options.calendar.max}
+                value={dateToAdd}
+                onChange={(e) => {
+                  setDateToAdd(e.target.value)
+                  setCalendarError('')
+                }}
+                aria-invalid={Boolean(calendarError)}
+                aria-describedby={calendarError ? 'busy-date-picker-error' : undefined}
+              />
+            </div>
+            <button type="button" className="secondary-button" onClick={addBusyDate}>
+              Добавить дату
+            </button>
+          </div>
+          {calendarError && (
+            <p className="field-error" id="busy-date-picker-error" role="alert">
+              {calendarError}
+            </p>
+          )}
+          <textarea
+            {...attrs('busy_dates')}
+            rows={3}
+            placeholder={options.calendar.min + ', ' + options.calendar.max}
+          />
+          {validBusyDates && busyDates.length > 0 && (
+            <ul className="busy-date-tags" aria-label="Выбранные занятые даты">
+              {busyDates.map((date) => (
+                <li key={date}>
+                  <span>{formatDate(date)}</span>
+                  <button
+                    type="button"
+                    aria-label={'Убрать занятую дату ' + formatDate(date, true)}
+                    onClick={() => {
+                      update('busy_dates', busyDates.filter((value) => value !== date).join(', '))
+                      setCalendarError('')
+                    }}
+                  >
+                    <X size={14} aria-hidden="true" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
         </FormField>
         <label className="synthetic-check">
           <input
@@ -430,8 +516,10 @@ export function ApplicationPage({
             <ContractorForm
               options={options}
               onSubmit={async (payload) => {
-                controller.current = new AbortController()
-                setReceipt(await platformApi.apply(payload, controller.current.signal))
+                const request = new AbortController()
+                controller.current = request
+                const result = await platformApi.apply(payload, request.signal)
+                if (!request.signal.aborted && controller.current === request) setReceipt(result)
               }}
             />
           ) : (
