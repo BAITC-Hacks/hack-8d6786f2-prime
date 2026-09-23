@@ -1,0 +1,131 @@
+import { ApiError } from '../api'
+import type { Options, Query, Recommendation, Contractor } from '../contracts'
+
+export const mockOptions: Options = {
+  cities: ['Алматы', 'Астана', 'Зарубежье'],
+  categories: ['Ведущий', 'Флорист', 'Декоратор'],
+  event_types: ['свадьба', 'той', 'корпоратив', 'конференция', 'юбилей', 'день рождения'],
+  languages: ['русский', 'казахский', 'английский'],
+  calendar: { min: '2026-09-23', max: '2026-12-31' },
+  dataset: { version: 'DEMO-ONLY', profiles_count: 3 },
+}
+export const mockQuery: Query = {
+  city: 'Алматы',
+  date: '2026-11-14',
+  event_type: 'корпоратив',
+  category: 'Ведущий',
+  budget_kzt: 1500000,
+  duration_hours: 6,
+  language: 'русский',
+  preferences: '',
+}
+const demoCard: Contractor = {
+  id: 'demo-1',
+  name: 'Алексей С.',
+  categories: ['Ведущий'],
+  city: 'Алматы',
+  price_from_kzt: 650000,
+  languages: ['русский'],
+  max_hours: 8,
+  available_on: '2026-11-14',
+  description:
+    'Вымышленный профиль для проверки интерфейса. Ведёт корпоративные события, помогает с программой и вовлекает гостей в общение.',
+  explanation:
+    'Ведёт корпоративы на русском языке и свободен в выбранную дату. Стоимость укладывается в бюджет, а допустимая длительность покрывает ваши 6 часов.',
+  evidence: [{ field: 'price_from_kzt', value: '650000' }],
+  synthetic: true,
+  price_imputed: false,
+  city_imputed: false,
+}
+export const mockCards: Contractor[] = [
+  demoCard,
+  {
+    ...demoCard,
+    id: 'demo-2',
+    name: 'Марат К.',
+    price_from_kzt: 800000,
+    languages: ['казахский', 'русский'],
+    max_hours: 6,
+    explanation:
+      'Работает с корпоративными мероприятиями и ведёт на двух языках. Доступен на вашу дату и может присутствовать все 6 часов.',
+  },
+  {
+    ...demoCard,
+    id: 'demo-3',
+    name: 'Дана А.',
+    price_from_kzt: 950000,
+    languages: ['русский', 'английский'],
+    max_hours: 7,
+    price_imputed: true,
+    city_imputed: true,
+    explanation:
+      'Опыт корпоративных событий и русский язык соответствуют запросу. Свободна 14 ноября, стоимость — в пределах указанного бюджета.',
+  },
+]
+export type Scenario =
+  'matched' | 'one' | 'two' | 'no_category' | 'no_match' | 'fallback' | 'error' | 'validation'
+export function makeMockResponse(
+  query: Query = mockQuery,
+  scenario: Scenario = 'matched',
+): Recommendation {
+  const empty = scenario === 'no_category' || scenario === 'no_match'
+  const cards = empty ? [] : mockCards.slice(0, scenario === 'one' ? 1 : scenario === 'two' ? 2 : 3)
+  return {
+    status: empty ? scenario : 'matched',
+    query,
+    total_in_category: scenario === 'no_category' ? 0 : 10,
+    eligible_count: empty ? 0 : cards.length === 3 ? 4 : cards.length,
+    cards: cards.map((card) => ({ ...card, available_on: query.date })),
+    summary:
+      scenario === 'no_category'
+        ? 'В выбранном городе нет подрядчиков этой категории.'
+        : scenario === 'no_match'
+          ? 'Подрядчики в этой категории есть, но никто не соответствует всем условиям.'
+          : cards.length === 3
+            ? 'Найдено 4 подходящих подрядчика. Показываем 3.'
+            : 'Подходящих подрядчиков: ' + cards.length + '. Показываем всех.',
+    rejections: {
+      busy: empty ? 2 : 0,
+      budget: empty ? 3 : 0,
+      event_type: 0,
+      language: 0,
+      duration: 0,
+    },
+    suggestions:
+      scenario === 'no_match'
+        ? [{ label: 'Проверить другую дату', changes: { date: '2026-11-15' } }]
+        : [],
+    meta: {
+      dataset_version: 'DEMO-ONLY',
+      explanation_mode: scenario === 'fallback' ? 'fallback' : 'llm',
+      latency_ms: 680,
+    },
+  }
+}
+export function delay(signal: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    if (signal.aborted) {
+      reject(new DOMException('Aborted', 'AbortError'))
+      return
+    }
+    const onAbort = () => {
+      clearTimeout(timer)
+      reject(new DOMException('Aborted', 'AbortError'))
+    }
+    const timer = setTimeout(() => {
+      signal.removeEventListener('abort', onAbort)
+      resolve()
+    }, 680)
+    signal.addEventListener('abort', onAbort, { once: true })
+  })
+}
+export async function mockRecommend(query: Query, scenario: Scenario, signal: AbortSignal) {
+  await delay(signal)
+  if (scenario === 'error')
+    throw new ApiError('Сервис временно не отвечает. Попробуйте ещё раз чуть позже.')
+  if (scenario === 'validation')
+    throw new ApiError('Проверьте условия мероприятия и попробуйте ещё раз.', {
+      budget_kzt: 'Укажите положительный бюджет в целых тенге.',
+    })
+  return makeMockResponse(query, scenario)
+}
