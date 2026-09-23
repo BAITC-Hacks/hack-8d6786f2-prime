@@ -7,7 +7,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from .catalog import Catalog
 from .explainer import Explainer, Settings
 from .models import Query
 from .recommender import select
@@ -22,7 +21,7 @@ async def check() -> int:
         print(json.dumps({"ok": False, "provider": settings.provider,
                           "message": "Заполните ключ и модель в backend/.env. Значения ключей не выводятся."}, ensure_ascii=False))
         return 2
-    seed = Catalog(Path(os.getenv("CONTRACTORS_CSV") or root / "data" / "contractors.csv"))
+    seed = Path(os.getenv("CONTRACTORS_CSV") or root / "data" / "contractors.csv")
     catalog = Store(Path(os.getenv("DATABASE_PATH") or root / "data" / "catalog.sqlite3"), seed).snapshot()
     query = Query(city="Алматы", date="2026-11-14", event_type="корпоратив", category="Ведущий",
                   budget_kzt=1500000, duration_hours=6, language="русский", preferences="интеллигентный юмор")

@@ -3,9 +3,11 @@ import hashlib
 import json
 import sqlite3
 import uuid
-from contextlib import contextmanager
+from contextlib import closing, contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
+
+from pydantic import ValidationError
 
 from .catalog import Catalog, Contractor
 from .profiles import ProfileInput
@@ -27,10 +29,10 @@ def now():
 
 
 class Store:
-    def __init__(self, path: Path, seed: Catalog):
+    def __init__(self, path: Path, seed: Catalog | Path):
         self.path = Path(path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        with sqlite3.connect(self.path, timeout=10) as conn:
+        with closing(sqlite3.connect(self.path, timeout=10)) as conn:
             version = conn.execute("PRAGMA user_version").fetchone()[0]
             if version not in (0, 1):
                 raise ValueError("Unsupported database schema version")
@@ -66,6 +68,8 @@ class Store:
             conn.executescript(schema + "PRAGMA user_version=1; COMMIT;")
         with self.connection(write=True) as conn:
             if conn.execute("SELECT value FROM metadata WHERE key='seed_version'").fetchone() is None:
+                # An initialized database is independent of the original import file.
+                seed = seed if isinstance(seed, Catalog) else Catalog(Path(seed))
                 for kind in ("cities", "categories", "event_types", "languages"):
                     conn.executemany("INSERT INTO vocabulary(kind,value) VALUES (?,?)",
                                      [(kind, value) for value in getattr(seed, kind)])
@@ -192,6 +196,12 @@ class Store:
                 raise StoreConflict("Анкета уже изменена. Обновите список и повторите действие.")
             if item["status"] == decision:
                 raise StoreConflict("Этот статус уже установлен.")
+            if decision == "approved" and item["source"] != "dataset":
+                try:
+                    ProfileInput.model_validate({field: item[field] for field in ProfileInput.model_fields})
+                except ValidationError:
+                    raise StoreConflict("Анкета не соответствует текущим правилам заполнения. "
+                                        "Нужно подать исправленную анкету перед одобрением.") from None
             conn.execute("UPDATE profiles SET status=?,revision=revision+1,moderation_note=?,updated_at=? WHERE id=?",
                          (decision, note, now(), profile_id))
             conn.execute("INSERT INTO audit_log(profile_id,action,created_at) VALUES (?,?,?)",

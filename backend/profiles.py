@@ -7,6 +7,8 @@ from typing import Literal
 
 from .catalog import CALENDAR_MIN, CALENDAR_MAX
 
+NON_PRESENCE_CATEGORIES = frozenset({"Флорист", "Декоратор", "Подарки и сувениры"})
+
 
 class ProfileInput(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
@@ -16,7 +18,8 @@ class ProfileInput(BaseModel):
     event_formats: list[str] = Field(min_length=1, max_length=6)
     languages: list[str] = Field(min_length=1, max_length=3)
     price_from_kzt: int = Field(strict=True, ge=1, le=1_000_000_000)
-    max_hours: float | None = Field(default=None, strict=True, gt=0, le=24, allow_inf_nan=False)
+    max_hours: float | None = Field(default=None, validate_default=True, strict=True,
+                                    gt=0, le=24, allow_inf_nan=False)
     busy_dates: list[date] = Field(default_factory=list, max_length=100)
     description: str = Field(min_length=30, max_length=3000)
     contact_email: str = Field(min_length=3, max_length=254)
@@ -44,6 +47,15 @@ class ProfileInput(BaseModel):
         if any(not value or len(value) > 80 for value in cleaned) or len(set(cleaned)) != len(cleaned):
             raise ValueError("Выберите значения без повторов и пустых строк")
         return sorted(cleaned)
+
+    @field_validator("max_hours")
+    @classmethod
+    def applicable_duration(cls, value, info):
+        categories = info.data.get("categories")
+        if value is None and categories and not set(categories).issubset(NON_PRESENCE_CATEGORIES):
+            raise ValueError("Укажите длительность работы больше 0 и не более 24 часов. "
+                             "Пустое значение допустимо только для флориста, декоратора и подарков.")
+        return value
 
     @field_validator("busy_dates", mode="before")
     @classmethod

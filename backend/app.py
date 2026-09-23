@@ -10,7 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from .catalog import CALENDAR_MAX, CALENDAR_MIN, Catalog
+from .catalog import CALENDAR_MAX, CALENDAR_MIN
 from .explainer import Explainer, Settings, compose, excerpts, fallback_choice
 from .http_limits import BodyLimitMiddleware
 from .models import Alternative, Card, Health, Meta, Options, Query, Recommendation
@@ -24,7 +24,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def create_app(csv_path: Path | None = None, settings: Settings | None = None,
                db_path: Path | None = None, admin_token: str | None = None) -> FastAPI:
     load_dotenv(ROOT / "backend" / ".env", override=False)
-    seed = Catalog(csv_path or Path(os.getenv("CONTRACTORS_CSV") or ROOT / "data" / "contractors.csv"))
+    seed = csv_path or Path(os.getenv("CONTRACTORS_CSV") or ROOT / "data" / "contractors.csv")
     store = Store(db_path or Path(os.getenv("DATABASE_PATH") or ROOT / "data" / "catalog.sqlite3"), seed)
     explainer = Explainer(settings or Settings.from_env())
     token = os.getenv("ADMIN_API_TOKEN", "").strip() if admin_token is None else admin_token
