@@ -19,7 +19,7 @@ async function fill(page: Page) {
   await page.getByLabel('Город', { exact: true }).selectOption('Алматы')
   await page.getByLabel('Дата', { exact: true }).fill('2026-11-14')
   await page.getByLabel('Тип мероприятия', { exact: true }).selectOption('корпоратив')
-  await page.getByLabel('Кого ищем?', { exact: true }).selectOption('Ведущий')
+  await page.getByLabel('Категория', { exact: true }).selectOption('Ведущий')
   await page.getByLabel('Бюджет до', { exact: true }).fill('1500000')
 }
 async function search(page: Page) {
@@ -28,7 +28,7 @@ async function search(page: Page) {
 }
 test('initial state, keyboard, dialog and screenshot', async ({ page }) => {
   await prepare(page)
-  await expect(page.getByRole('heading', { name: 'Те, кто подойдёт именно вам' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Что подойдёт вашему событию' })).toBeVisible()
   await expect(page.locator('article')).toHaveCount(0)
   await page.keyboard.press('Tab')
   await expect(page.getByRole('link', { name: 'Перейти к подбору' })).toBeFocused()
@@ -87,7 +87,9 @@ for (const scenario of ['one', 'two', 'no_category', 'no_match', 'fallback'] as 
       await expect(page.locator('article')).toHaveCount(0)
     }
     if (scenario === 'fallback')
-      await expect(page.getByText('Базовые объяснения по данным каталога.')).toBeVisible()
+      await expect(
+        page.getByText('Базовые объяснения по данным каталога (fallback).'),
+      ).toBeVisible()
   })
 }
 test('null max_hours is inapplicable and is never 0 or 24h', async ({ page }) => {
@@ -99,9 +101,7 @@ test('null max_hours is inapplicable and is never 0 or 24h', async ({ page }) =>
   })
   await search(page)
   await page.locator('article summary').click()
-  await expect(
-    page.getByText('Для этой услуги длительность присутствия не применяется.'),
-  ).toBeVisible()
+  await expect(page.getByText('Длительность присутствия не применяется')).toBeVisible()
   await expect(page.locator('article')).not.toContainText('До 0')
   await expect(page.locator('article')).not.toContainText('24 ч')
 })

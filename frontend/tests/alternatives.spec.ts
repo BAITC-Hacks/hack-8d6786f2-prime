@@ -10,7 +10,7 @@ test('alternatives remain separate, display changes and require a second explici
   await page.getByLabel('Город', { exact: true }).selectOption('Алматы')
   await page.getByLabel('Дата', { exact: true }).fill('2026-11-14')
   await page.getByLabel('Тип мероприятия', { exact: true }).selectOption('корпоратив')
-  await page.getByLabel('Кого ищем?', { exact: true }).selectOption('Ведущий')
+  await page.getByLabel('Категория', { exact: true }).selectOption('Ведущий')
   await page.getByLabel('Бюджет до', { exact: true }).fill('600000')
   await page.getByLabel('Язык', { exact: true }).selectOption('русский')
   await page.getByLabel('Длительность, ч', { exact: true }).fill('6')
@@ -24,7 +24,7 @@ test('alternatives remain separate, display changes and require a second explici
   expect(result.status).toBe('no_match')
   expect(result.cards).toEqual([])
   await expect(page.getByRole('heading', { name: 'Пока нет точного совпадения' })).toBeVisible()
-  const region = page.getByRole('region', { name: 'Альтернативные подрядчики' })
+  const region = page.getByRole('region', { name: 'Варианты с изменением условий' })
   await expect(region).toBeVisible()
   for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 1000 })

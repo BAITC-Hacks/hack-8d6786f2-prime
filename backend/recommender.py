@@ -65,11 +65,13 @@ def select(catalog: Catalog, query: Query) -> Selection:
                          f"В этой категории в городе профилей: {len(base)}; ни один не проходит все условия. {explain_rejections(rejected)}")
     total = len(eligible)
     if total < 3:
-        summary = f"Подходит профилей: {total}. Показываем все. "
+        summary = ("Подходит 1 профиль. " if total == 1 else "Подходят 2 профиля. ") + "Показываем все. "
         if len(base) == total:
-            summary += f"В этой категории в городе в каталоге всего {len(base)} профилей."
+            summary += ("В этой категории и городе в каталоге всего 1 профиль." if total == 1
+                        else "В этой категории и городе в каталоге всего 2 профиля.")
         else:
-            summary += f"Из {len(base)} профилей этой категории {len(base) - total} не проходят условия. {explain_rejections(rejected)}"
+            summary += (f"Всего профилей этой категории в городе: {len(base)}; "
+                        f"исключено по условиям: {len(base) - total}. {explain_rejections(rejected)}")
     else:
         summary = f"Подходит профилей: {total}. Показываем 3 по правилам подбора."
     return Selection("matched", base, eligible, rejected, summary)

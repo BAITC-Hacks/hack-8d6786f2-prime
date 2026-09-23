@@ -122,7 +122,8 @@ def test_input_types_match_contract(client, update):
 def test_explanation_uses_specific_detail_not_greeting(client):
     result = recommend(client)
     mitsuri = next(card for card in result["cards"] if card["id"] == "HK-44923")
-    assert "Импровизация, живой интеллигентный юмор" in mitsuri["explanation"]
+    assert "DJ и современная танцевальная музыка и мультимедийное оборудование" in mitsuri["explanation"]
+    assert mitsuri["evidence"][0]["value"] in mitsuri["description"]
     assert "Приветствую всех" not in mitsuri["explanation"]
 
 

@@ -32,9 +32,11 @@ async def recommend(store, explainer, query):
     explanations, mode = await explainer.explain(top, query, catalog.version)
     cards = [make_card(row, query, explanations[row.id]) for row in top]
     near = []
-    for row, proposed, changes, differences in nearby_candidates(query, selection):
+    nearby = nearby_candidates(query, selection)
+    for row, proposed, changes, differences in nearby:
         snippets = excerpts(row.description)
-        grounded = compose(row, proposed, fallback_choice(row, proposed, snippets), snippets)
+        grounded = compose(row, proposed, fallback_choice(row, proposed, snippets,
+                           [candidate[0] for candidate in nearby]), snippets)
         near.append(Alternative(card=make_card(row, proposed, grounded), changes=changes, differences=differences))
     return Recommendation(status=selection.status, query=query,
                           total_in_category=len(selection.base), eligible_count=len(selection.eligible),

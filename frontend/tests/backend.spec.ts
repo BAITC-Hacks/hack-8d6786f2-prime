@@ -24,7 +24,7 @@ async function fillRealForm(
   await page
     .getByLabel('Тип мероприятия', { exact: true })
     .selectOption(overrides.event ?? 'корпоратив')
-  await page.getByLabel('Кого ищем?', { exact: true }).selectOption(overrides.category ?? 'Ведущий')
+  await page.getByLabel('Категория', { exact: true }).selectOption(overrides.category ?? 'Ведущий')
   await page.getByLabel('Бюджет до', { exact: true }).fill(overrides.budget ?? '1500000')
   await page.getByLabel('Язык', { exact: true }).selectOption(overrides.language ?? 'русский')
   await page.getByLabel('Длительность, ч', { exact: true }).fill(overrides.duration ?? '6')
@@ -58,7 +58,7 @@ test('real API options, ranked matches, fallback, desktop and mobile', async ({
     result.cards.map((c: { name: string }) => c.name),
   )
   await expect(page.getByText('Показано 3 из 4')).toBeVisible()
-  await expect(page.getByText('Базовые объяснения по данным каталога.')).toBeVisible()
+  await expect(page.getByText('Базовые объяснения по данным каталога (fallback).')).toBeVisible()
   expect(
     (await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze())
       .violations,
@@ -74,7 +74,16 @@ test('real no_match suggestion changes date and then returns one candidate', asy
   await fillRealForm(page, { budget: '600000' })
   const initial = await recommend(page)
   expect(initial.status).toBe('no_match')
-  await page.getByRole('button', { name: initial.suggestions[0].label }).click()
+  const dateChange = initial.suggestions[0].changes.date
+  const dateAlternative = initial.alternatives.find(
+    (alternative: { changes: Record<string, unknown> }) =>
+      Object.keys(alternative.changes).length === 1 && alternative.changes.date === dateChange,
+  )
+  const button = dateAlternative
+    ? 'Применить условия для ' + dateAlternative.card.name
+    : initial.suggestions[0].label
+  await page.getByRole('button', { name: button }).click()
+  await expect(page.getByLabel('Бюджет до', { exact: true })).toHaveValue('600000')
   await expect(page.getByLabel('Дата', { exact: true })).toHaveValue('2026-11-15')
   const next = await recommend(page)
   expect(next.cards.map((c: { id: string }) => c.id)).toEqual(['HK-88430'])
@@ -94,9 +103,7 @@ test('real synthetic florist keeps null language and inapplicable duration', asy
   expect(result.cards[0].max_hours).toBeNull()
   await expect(page.getByText('Вымышленный профиль', { exact: true })).toBeVisible()
   await page.locator('article summary').click()
-  await expect(
-    page.getByText('Для этой услуги длительность присутствия не применяется.'),
-  ).toBeVisible()
+  await expect(page.getByText('Длительность присутствия не применяется')).toBeVisible()
 })
 test('real no_category stays distinct from constrained no_match', async ({ page }) => {
   await fillRealForm(page, { city: 'Астана', category: 'Декоратор' })
@@ -106,4 +113,43 @@ test('real no_category stays distinct from constrained no_match', async ({ page 
     page.getByRole('heading', { name: 'В этом городе пока нет такой категории' }),
   ).toBeVisible()
   await expect(page.locator('article')).toHaveCount(0)
+})
+
+test('real source explanations distinguish bands and keep the wedding fact complete', async ({
+  page,
+}) => {
+  await fillRealForm(page, {
+    category: 'Лайв-бэнд',
+    event: 'свадьба',
+    date: '2026-09-23',
+    budget: '10000000',
+    language: '',
+    duration: '',
+  })
+  const bands = await recommend(page)
+  for (const [id, fact] of [
+    ['HK-23752', 'два вокалиста'],
+    ['HK-83709', 'струнный квартет'],
+  ]) {
+    const card = bands.cards.find((item: { id: string }) => item.id === id)
+    await expect(page.getByRole('article', { name: card.name, exact: true })).toContainText(fact)
+  }
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({
+    path: 'test-results/screenshots/band-evidence-mobile.png',
+    fullPage: true,
+  })
+  await fillRealForm(page, {
+    event: 'свадьба',
+    date: '2026-09-23',
+    budget: '10000000',
+    language: 'казахский',
+    duration: '10',
+  })
+  const hosts = await recommend(page)
+  const host = hosts.cards.find((item: { id: string }) => item.id === 'HK-42352')
+  const card = page.getByRole('article', { name: host.name, exact: true })
+  await expect(card.locator('blockquote')).toHaveText('Опыт ведения свадеб 13 лет')
+  await expect(card.locator('.explanation')).not.toContainText('чтобы этот')
 })

@@ -19,6 +19,14 @@ def context():
     return catalog, query, select(catalog, query).eligible[:3]
 
 
+def provider_choices(request, highlight="budget"):
+    """A valid provider chooses actual indices supplied in the request."""
+    candidates = json.loads(request.content)["messages"][1]["content"]
+    return {"items": [{"id": row["id"], "snippet_index": row["snippets"][0]["index"],
+                       "highlight": highlight}
+                      for row in reversed(json.loads(candidates)["candidates"])]}
+
+
 @pytest.mark.parametrize("invitation", [
     "Свяжитесь с нами, чтобы заказать незабываемый корпоратив с юмором и интерактивом",
     "Закажите корпоратив с юмором, интерактивом и танцами прямо сейчас",
@@ -51,7 +59,7 @@ def test_provider_success_cache_and_server_owned_facts():
     calls = []
     def handler(request):
         calls.append(request)
-        content = {"items": [{"id": r.id, "snippet_index": 0, "highlight": "budget"} for r in reversed(items)]}
+        content = provider_choices(request)
         return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(content)}}]})
     engine = Explainer(Settings(api_key="test-not-a-real-key"), httpx.MockTransport(handler))
     result, mode = asyncio.run(engine.explain(items, query, catalog.version))
@@ -133,7 +141,7 @@ def test_nvidia_endpoint_and_json_handling():
         assert str(request.url) == "https://integrate.api.nvidia.com/v1/chat/completions"
         body = json.loads(request.content)
         assert body["model"] == "test/model" and "max_tokens" in body
-        result = {"items": [{"id": r.id, "snippet_index": 0, "highlight": "event_type"} for r in items]}
+        result = provider_choices(request, "event_type")
         return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(result)}}]})
     _, mode = asyncio.run(Explainer(Settings(provider="nvidia", model="test/model", api_key="test"),
                                    httpx.MockTransport(handler)).explain(items, query, catalog.version))
