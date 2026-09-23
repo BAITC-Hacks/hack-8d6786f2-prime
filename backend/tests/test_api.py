@@ -132,6 +132,16 @@ def test_explanation_uses_specific_detail_not_greeting(client):
     assert "Приветствую всех" not in mitsuri["explanation"]
 
 
+def test_ensemble_explanation_uses_description_instead_of_sales_invitation(client):
+    result = recommend(client, category="Национальный ансамбль", event_type="той",
+                       budget_kzt=400000, duration_hours=2, language="казахский")
+    card = next(card for card in result["cards"] if card["id"] == "HK-19103")
+    assert result["meta"]["explanation_mode"] == "fallback"
+    assert "энергичная команда джигитов" in card["explanation"]
+    assert "свяжитесь с нами" not in card["explanation"]
+    assert card["evidence"][0]["value"] in card["description"]
+
+
 def test_openapi_contains_typed_options_and_health(client):
     schema = client.get("/openapi.json").json()
     assert "profiles_count" in schema["components"]["schemas"]["DatasetInfo"]["properties"]

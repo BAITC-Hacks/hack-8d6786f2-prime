@@ -27,6 +27,11 @@ FORMAT_STEMS = {
 FEATURE_STEMS = ("юмор", "сценари", "импровизац", "интерактив", "репортаж", "портрет", "флорист",
                  "палитр", "композиц", "фотозон", "акуст", "скрипк", "саксофон", "традиц", "танц", "развлеч")
 INTRO = re.compile(r"^(привет|здравствуйте|меня зовут|я[, ]|коротко обо мне|дорог|с уважением)", re.I)
+PROMOTIONAL_LANGUAGE = re.compile(
+    r"\b(?:свяжитесь|связывайтесь|звоните|позвоните|пишите|напишите|обращайтесь|"
+    r"закажите|заказывайте|забронируйте|бронируйте|оставьте\s+(?:заявку|контакт\w*|номер)|"
+    r"успейте\s+(?:заказать|забронировать)|"
+    r"готов(?:а|ы|о)?\s+выступить\s+на\s+ваш\w*\s+(?:торжеств|мероприяти|праздник)\w*)\b", re.I)
 
 
 @dataclass(frozen=True)
@@ -82,11 +87,15 @@ def fallback_choice(item: Contractor, query: Query, snippets: list[str]) -> Choi
     wanted = tokens(query.preferences)
     def relevance(index):
         text = snippets[index].casefold().replace("ё", "е")
-        return (len(tokens(text) & wanted),
+        # Prefer non-promotional excerpts even when sales copy repeats query keywords.
+        # If all excerpts are promotional, still quote the source without inventing facts.
+        return (not bool(PROMOTIONAL_LANGUAGE.search(text)),
+                len(tokens(text) & wanted),
                 sum(stem in text for stem in FORMAT_STEMS.get(query.event_type, ())),
                 not bool(INTRO.match(text)),
                 sum(stem in text for stem in FEATURE_STEMS),
-                min(len(tokens(text)), 18), -index)
+                min(len(tokens(text)), 18),
+                -index)
     index = max(range(len(snippets)), key=relevance)
     highlight = "duration" if query.duration_hours is not None and item.max_hours is not None else "event_type"
     return Choice(id=item.id, snippet_index=index, highlight=highlight)

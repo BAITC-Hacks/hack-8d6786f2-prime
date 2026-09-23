@@ -82,6 +82,17 @@ def main():
             assert client.get("/").status_code == 200
             assert client.get("/api/options").json()["dataset"]["profiles_count"] == 66
             assert client.get("/api/health").json()["ai_available"] is False
+            recommendation = client.post("/api/recommend", json={
+                "city": "Алматы", "date": "2026-11-14", "event_type": "той",
+                "category": "Национальный ансамбль", "budget_kzt": 400000,
+                "duration_hours": 2, "language": "казахский"})
+            assert recommendation.status_code == 200
+            result = recommendation.json()
+            assert result["meta"]["explanation_mode"] == "fallback"
+            ensemble = next(card for card in result["cards"] if card["id"] == "HK-19103")
+            assert "энергичная команда джигитов" in ensemble["explanation"]
+            assert "свяжитесь с нами" not in ensemble["explanation"]
+            assert ensemble["evidence"][0]["value"] in ensemble["description"]
             for path in ("/.env", "/data/catalog.sqlite3", "/backend/app.py"):
                 assert client.get(path).status_code == 404
             token = dotenv_values(state / ".env")["ADMIN_API_TOKEN"]
@@ -111,7 +122,7 @@ def main():
             listing = client.get("/api/admin/profiles", headers=auth, params={"limit": 100}).json()
             assert any(item["id"] == created for item in listing["items"])
             assert client.get("/api/options").json()["dataset"]["profiles_count"] == 67
-        print(json.dumps({"package": "passed", "restart_without_csv": "passed",
+        print(json.dumps({"package": "passed", "restart_without_csv": "passed", "fallback_evidence": "passed",
                           "external_python_node_on_app_path": False, "browser": args.browser}))
 
 

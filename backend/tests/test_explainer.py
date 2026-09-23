@@ -1,12 +1,13 @@
 import asyncio
 import json
+from dataclasses import replace
 from pathlib import Path
 
 import httpx
 import pytest
 
 from backend.catalog import Catalog
-from backend.explainer import Choice, Explainer, Settings, compose, excerpts
+from backend.explainer import Choice, Explainer, Settings, compose, excerpts, fallback_choice
 from backend.models import Query
 from backend.recommender import select
 from backend.tests.test_api import BASE
@@ -16,6 +17,34 @@ def context():
     catalog = Catalog(Path(__file__).resolve().parents[2] / "data" / "contractors.csv")
     query = Query(**BASE)
     return catalog, query, select(catalog, query).eligible[:3]
+
+
+@pytest.mark.parametrize("invitation", [
+    "Свяжитесь с нами, чтобы заказать незабываемый корпоратив с юмором и интерактивом",
+    "Закажите корпоратив с юмором, интерактивом и танцами прямо сейчас",
+    "Оставьте заявку на корпоратив с юмором и незабываемыми впечатлениями",
+    "Бронируйте корпоратив с юмором и интерактивом для всех ваших гостей",
+    "Готовы выступить на вашем мероприятии и подарить незабываемый корпоратив с юмором",
+])
+def test_fallback_prefers_service_detail_even_when_invitation_matches_preferences(invitation):
+    _, query, items = context()
+    query = query.model_copy(update={"preferences": "корпоратив с юмором и интерактивом"})
+    detail = "В составе ансамбля четыре вокалиста и два инструменталиста"
+    item = replace(items[0], description=f"{invitation}. {detail}.")
+    snippets = excerpts(item.description)
+    selected = fallback_choice(item, query, snippets)
+    assert snippets[selected.snippet_index] == detail
+    assert fallback_choice(item, query, snippets) == selected
+
+
+def test_fallback_keeps_source_evidence_when_only_sales_text_is_available():
+    _, query, items = context()
+    item = replace(items[0], description="Свяжитесь с нами, чтобы обсудить ваше мероприятие.")
+    snippets = excerpts(item.description)
+    selected = fallback_choice(item, query, snippets)
+    explanation, evidence = compose(item, query, selected, snippets)
+    assert evidence[0].value in item.description
+    assert "вокалист" not in explanation and "инструменталист" not in explanation
 
 
 def test_provider_success_cache_and_server_owned_facts():
