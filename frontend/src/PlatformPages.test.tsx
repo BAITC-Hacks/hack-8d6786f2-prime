@@ -175,6 +175,30 @@ describe('admin session and conflicts', () => {
     expect(screen.queryByText('private-contact@example.com')).not.toBeInTheDocument()
     expect(screen.getByText('Доступ запрещён')).toBeVisible()
   })
+  it('allows rejection and deletion when an old profile fails current approval rules', async () => {
+    vi.spyOn(platformApi, 'list').mockResolvedValue(
+      adminList([{ ...adminProfile, max_hours: null }]),
+    )
+    const moderate = vi
+      .spyOn(platformApi, 'moderate')
+      .mockRejectedValue(
+        new PlatformError(
+          'Нужно подать исправленную анкету перед одобрением.',
+          409,
+          {},
+          'invalid_profile',
+        ),
+      )
+    renderAdmin()
+    await loginAdmin()
+    openProfile()
+    fireEvent.click(screen.getByRole('button', { name: 'Одобрить анкету' }))
+    await screen.findByText('Нужно подать исправленную анкету перед одобрением.')
+    expect(moderate).toHaveBeenCalledTimes(1)
+    expect(screen.getByRole('button', { name: 'Одобрить анкету' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Отклонить анкету' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Удалить анкету' })).toBeEnabled()
+  })
 
   it('requires a rejection reason and focuses its field', async () => {
     vi.spyOn(platformApi, 'list').mockResolvedValue(adminList())
@@ -275,6 +299,8 @@ describe('public contractor application', () => {
     render(<ContractorForm options={mockOptions} onSubmit={send} />)
     fillApplication()
     fireEvent.change(document.getElementById('application-max_hours')!, { target: { value: '' } })
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Ведущий' }))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Флорист' }))
     submit()
     submit()
     expect(send).toHaveBeenCalledTimes(1)
@@ -288,6 +314,30 @@ describe('public contractor application', () => {
     expect(screen.getByRole('button', { name: 'Сохраняем анкету…' })).toBeDisabled()
     await act(async () => resolve())
   })
+
+  it.each([false, true])(
+    'updates duration validation and focus after category changes (direct=%s)',
+    async (direct) => {
+      const send = vi.fn().mockResolvedValue(undefined)
+      render(<ContractorForm options={mockOptions} onSubmit={send} direct={direct} />)
+      fillApplication()
+      const duration = screen.getByLabelText('Максимальная длительность, ч')
+      fireEvent.change(duration, { target: { value: '' } })
+      expect(duration).toBeRequired()
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Декоратор' }))
+      submit()
+      expect(send).not.toHaveBeenCalled()
+      expect(duration).toHaveFocus()
+      expect(duration).toHaveAttribute('aria-invalid', 'true')
+      fireEvent.click(screen.getByRole('checkbox', { name: 'Ведущий' }))
+      expect(duration).not.toBeRequired()
+      expect(duration).toHaveAttribute('aria-invalid', 'false')
+      expect(screen.getByText(/Можно оставить пустым/)).toBeVisible()
+      submit()
+      await waitFor(() => expect(send).toHaveBeenCalledTimes(1))
+      expect(send.mock.calls[0][0]).toMatchObject({ categories: ['Декоратор'], max_hours: null })
+    },
+  )
 
   it('supports picking, removing and validating busy dates without silent deduplication', () => {
     render(<ContractorForm options={mockOptions} onSubmit={vi.fn()} />)

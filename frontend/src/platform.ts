@@ -1,7 +1,12 @@
 import { z } from 'zod'
 import { formatDate, type Options } from './contracts'
 
-export const applicationSchema = z.object({
+// Contract platform-v2 at c6e15d2: the same duration rule applies to both write endpoints.
+const nonPresenceCategories = new Set(['Флорист', 'Декоратор', 'Подарки и сувениры'])
+export const requiresPresenceDuration = (categories: string[]) =>
+  categories.some((category) => !nonPresenceCategories.has(category))
+
+const applicationFieldsSchema = z.object({
   name: z.string().trim().min(2).max(120),
   city: z.string().min(1),
   categories: z.array(z.string()).min(1),
@@ -18,6 +23,10 @@ export const applicationSchema = z.object({
     .regex(/^[^@\s]+@[^@\s.]+(?:\.[^@\s.]+)+$/),
   synthetic: z.boolean(),
 })
+export const applicationSchema = applicationFieldsSchema.refine(
+  (value) => value.max_hours !== null || !requiresPresenceDuration(value.categories),
+  { path: ['max_hours'], message: 'Presence-based services require a numeric duration' },
+)
 export type Application = z.infer<typeof applicationSchema>
 export type ApplicationField = keyof Application
 export type ApplicationErrors = Partial<Record<ApplicationField, string>>
@@ -47,7 +56,7 @@ export const applicationMessages: Record<ApplicationField, string> = {
   languages: 'Выберите хотя бы один язык.',
   price_from_kzt: 'Цена должна быть целой: от 1 до 1 000 000 000 ₸.',
   max_hours:
-    'Укажите число больше 0 и не больше 24. Пустое поле означает неприменимость длительности.',
+    'Укажите число больше 0 и не больше 24. Пустое поле допустимо только для флориста, декоратора и подарков.',
   busy_dates: 'Укажите до 100 уникальных дат YYYY-MM-DD в доступном календаре.',
   description: 'Расскажите об услугах: от 30 до 3000 символов.',
   contact_email: 'Укажите корректный email, не больше 254 символов.',
@@ -122,7 +131,8 @@ export function validateApplication(form: ApplicationForm, options: Options): Ap
   }
   return errors
 }
-export const profileSchema = applicationSchema.omit({ contact_email: true }).extend({
+// Imported and older profiles remain readable even when current write rules are stricter.
+export const profileSchema = applicationFieldsSchema.omit({ contact_email: true }).extend({
   name: z.string(),
   description: z.string(),
   categories: z.array(z.string()),
@@ -168,6 +178,7 @@ export class PlatformError extends Error {
     message: string,
     public status = 0,
     public fields: ApplicationErrors = {},
+    public reason?: 'invalid_profile',
   ) {
     super(message)
     this.name = 'PlatformError'
@@ -194,8 +205,11 @@ async function request<T>(
     })
     if (!response.ok) {
       const fields: ApplicationErrors = {}
+      const body: unknown =
+        response.status === 422 || response.status === 409
+          ? await response.json().catch(() => null)
+          : null
       if (response.status === 422) {
-        const body: unknown = await response.json().catch(() => null)
         const parsed = z
           .object({
             detail: z.array(z.object({ loc: z.array(z.union([z.string(), z.number()])) })),
@@ -208,6 +222,16 @@ async function request<T>(
             ) as ApplicationField | undefined
             if (field) fields[field] = applicationMessages[field]
           }
+      }
+      // Recognize one agreed server message; never echo arbitrary response bodies or secrets.
+      const invalidProfileMessage =
+        'Анкета не соответствует текущим правилам заполнения. Нужно подать исправленную анкету перед одобрением.'
+      if (
+        response.status === 409 &&
+        path.endsWith('/moderate') &&
+        z.object({ detail: z.literal(invalidProfileMessage) }).safeParse(body).success
+      ) {
+        throw new PlatformError(invalidProfileMessage, 409, {}, 'invalid_profile')
       }
       const message =
         (

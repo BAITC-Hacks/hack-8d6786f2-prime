@@ -16,6 +16,7 @@ import {
   blankApplication,
   busyDatesError,
   parseBusyDates,
+  requiresPresenceDuration,
   platformApi,
   PlatformError,
   validateApplication,
@@ -82,6 +83,7 @@ export function ContractorForm({
   const [busy, setBusy] = useState(false)
   const [dateToAdd, setDateToAdd] = useState('')
   const [calendarError, setCalendarError] = useState('')
+  const durationRequired = requiresPresenceDuration(form.categories)
   const locked = useRef(false)
   const mounted = useRef(true)
   const element = useRef<HTMLFormElement>(null)
@@ -93,7 +95,11 @@ export function ContractorForm({
   }, [])
   const update = <K extends ApplicationField>(key: K, value: ApplicationForm[K]) => {
     setForm((old) => ({ ...old, [key]: value }))
-    setErrors((old) => ({ ...old, [key]: undefined }))
+    setErrors((old) => ({
+      ...old,
+      [key]: undefined,
+      ...(key === 'categories' ? { max_hours: undefined } : {}),
+    }))
     setError('')
   }
   const attrs = (
@@ -311,13 +317,20 @@ export function ContractorForm({
             name="max_hours"
             label="Максимальная длительность, ч"
             error={errors.max_hours}
-            hint="До 24 часов. Пусто — длительность неприменима к услуге."
+            hint={
+              durationRequired
+                ? 'Обязательно для выбранных услуг: больше 0 и не больше 24 часов.'
+                : form.categories.length
+                  ? 'Можно оставить пустым: для выбранных услуг длительность присутствия не применяется. Если указана — до 24 часов.'
+                  : 'Обязательно для услуг присутствия. Пусто допустимо только для флориста, декоратора и подарков.'
+            }
           >
             <input
               {...attrs('max_hours')}
               type="text"
               inputMode="decimal"
               placeholder="Например, 6"
+              required={durationRequired}
             />
           </FormField>
         </div>
@@ -561,6 +574,7 @@ export function AdminPage({
   const [adding, setAdding] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState<Profile | null>(null)
   const [revisionConflict, setRevisionConflict] = useState(false)
+  const [approvalBlocked, setApprovalBlocked] = useState(false)
   const active = useRef<AbortController | null>(null)
   const lock = useRef(false)
   const deleteDialog = useRef<HTMLDialogElement>(null)
@@ -590,6 +604,7 @@ export function AdminPage({
     setNote('')
     setNoteError('')
     setRevisionConflict(false)
+    setApprovalBlocked(false)
     setConfirmDelete(null)
     setAdding(false)
     setBusy(false)
@@ -607,7 +622,8 @@ export function AdminPage({
       logout()
       setNotice('')
     }
-    if (problem.status === 409 || problem.status === 404) setRevisionConflict(true)
+    if (problem.reason === 'invalid_profile') setApprovalBlocked(true)
+    else if (problem.status === 409 || problem.status === 404) setRevisionConflict(true)
     setError(problem.message)
   }
   const begin = () => {
@@ -651,6 +667,7 @@ export function AdminPage({
       setNote('')
       setNoteError('')
       setRevisionConflict(false)
+      setApprovalBlocked(false)
       if (login) {
         setToken(nextToken)
         setTokenInput('')
@@ -675,6 +692,7 @@ export function AdminPage({
       setNote('')
       setNoteError('')
       setRevisionConflict(false)
+      setApprovalBlocked(false)
       setList(null)
       setNotice(message)
       const result = await platformApi.list(token, filter, 0, controller.signal)
@@ -692,7 +710,13 @@ export function AdminPage({
     }
   }
   const moderate = (decision: 'approved' | 'rejected') => {
-    if (!selected || revisionConflict || lock.current) return
+    if (
+      !selected ||
+      revisionConflict ||
+      lock.current ||
+      (decision === 'approved' && approvalBlocked)
+    )
+      return
     if (decision === 'rejected' && note.trim().length < 3) {
       setError('Укажите причину отклонения: не меньше 3 символов.')
       setNoteError('Для отклонения нужна причина от 3 до 500 символов.')
@@ -903,6 +927,7 @@ export function AdminPage({
                           setSelected(profile)
                           setNote(profile.moderation_note)
                           setNoteError('')
+                          setApprovalBlocked(false)
                           setAdding(false)
                           const currentSession = session.current
                           const focusOrigin = document.activeElement
@@ -1066,7 +1091,12 @@ export function AdminPage({
                     <div className="moderation-actions">
                       <button
                         className="primary-button compact"
-                        disabled={busy || revisionConflict || selected.status === 'approved'}
+                        disabled={
+                          busy ||
+                          revisionConflict ||
+                          approvalBlocked ||
+                          selected.status === 'approved'
+                        }
                         onClick={() => moderate('approved')}
                       >
                         <Check size={17} />
