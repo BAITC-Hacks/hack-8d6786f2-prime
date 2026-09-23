@@ -148,7 +148,9 @@ python qa/evaluate_explanations.py
 
 Набор [qa/evaluation-cases.json](qa/evaluation-cases.json) содержит 28 запросов по всем 17 категориям. `python qa/evaluate_explanations.py --live` сравнивает fallback и ваш живой API на том же наборе: до 24 новых платных вызовов, остальные запросы не имеют кандидатов. Отчёт сохраняется в `qa/artifacts/evaluation.json`; проверки без `--live` ключ не используют. Нагрузка: `python qa/load_recommendations.py --requests 100 --concurrency 100`.
 
-CI запускает backend/HTTP, frontend, сборку, генерацию контракта, оценочный набор и полный браузерный набор без секретов. Артефакт привязан к SHA: [запуски Acceptance](https://github.com/BAITC-Hacks/hack-8d6786f2-prime/actions/workflows/acceptance.yml). Локальные результаты и границы измерений: [verification.md](docs/verification.md).
+Workflow CI настроен на backend/HTTP, frontend, сборку, генерацию контракта, оценочный набор и полный браузерный набор без секретов. Артефакт привязывается к SHA: [запуски Acceptance](https://github.com/BAITC-Hacks/hack-8d6786f2-prime/actions/workflows/acceptance.yml). На 23.09.2026 GitHub не начал первый запуск из-за блокировки оплаты Actions у владельца репозитория; успешный облачный прогон не заявляется. Локальная приёмка и установка проходят: [verification.md](docs/verification.md). Это не мешает локальному запуску проекта.
+
+Результаты сравнения fallback/живого AI на опубликованном коммите: [evaluation-report.md](docs/evaluation-report.md).
 
 ## Данные и интеграции
 
