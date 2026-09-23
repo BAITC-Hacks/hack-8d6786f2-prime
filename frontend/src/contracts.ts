@@ -35,23 +35,40 @@ export const cardSchema = z.object({
   price_imputed: z.boolean(),
   city_imputed: z.boolean(),
 })
-export const alternativeSchema = z.object({
-  card: cardSchema,
-  changes: querySchema
-    .pick({ date: true, budget_kzt: true, language: true, duration_hours: true })
-    .partial(),
-  differences: z
-    .array(
-      z.object({
-        field: z.enum(['date', 'budget_kzt', 'language', 'duration_hours']),
-        requested: z.string(),
-        proposed: z.string(),
-        reason: z.string(),
-      }),
-    )
-    .min(1),
-  explanation_mode: z.enum(['llm', 'fallback']),
-})
+const alternativeChangesSchema = querySchema
+  .pick({ date: true, budget_kzt: true, language: true, duration_hours: true })
+  .partial()
+  .strict()
+export const alternativeSchema = z
+  .object({
+    card: cardSchema,
+    changes: alternativeChangesSchema,
+    differences: z
+      .array(
+        z.object({
+          field: z.enum(['date', 'budget_kzt', 'language', 'duration_hours']),
+          requested: z.string().min(1),
+          proposed: z.string().min(1),
+          reason: z.string().min(1),
+        }),
+      )
+      .min(1)
+      .max(4),
+    explanation_mode: z.enum(['llm', 'fallback']),
+  })
+  .refine(
+    (value) => {
+      const changed = Object.keys(value.changes)
+      const described = value.differences.map((difference) => difference.field)
+      return (
+        changed.length > 0 &&
+        changed.length === described.length &&
+        new Set(described).size === described.length &&
+        changed.every((key) => described.includes(key as (typeof described)[number]))
+      )
+    },
+    { message: 'Every alternative change must be explained exactly once' },
+  )
 export const recommendationSchema = z
   .object({
     status: z.enum(['matched', 'no_category', 'no_match']),
@@ -83,6 +100,22 @@ export const recommendationSchema = z
           data.cards.length <= data.eligible_count
         : data.eligible_count === 0 && data.cards.length === 0,
     { message: 'Inconsistent recommendation status' },
+  )
+  .refine((data) => !data.alternatives?.length || data.status === 'no_match', {
+    message: 'Alternatives are only valid for no_match',
+  })
+  .refine(
+    (data) =>
+      (data.alternatives ?? []).every(
+        (alternative) =>
+          alternative.card.city === data.query.city &&
+          alternative.card.categories.includes(data.query.category) &&
+          alternative.card.available_on === (alternative.changes.date ?? data.query.date) &&
+          Object.entries(alternative.changes).every(
+            ([key, value]) => value !== data.query[key as keyof typeof alternative.changes],
+          ),
+      ),
+    { message: 'Alternative must preserve the requested service and identify actual changes' },
   )
 
 export type Options = z.infer<typeof optionsSchema>

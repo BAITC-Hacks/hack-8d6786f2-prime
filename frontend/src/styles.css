@@ -2371,6 +2371,26 @@ footer {
   box-shadow: none;
   margin: 0;
 }
+.alternative-description {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #53634c;
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.alternative-mode {
+  display: flex;
+  gap: 6px;
+  align-items: start;
+  margin: 0 22px 16px;
+  color: #5b674e;
+  font-size: 11px;
+  line-height: 1.6;
+}
 .alternative-option .avatar {
   background: #e5eadb;
   color: #41553b;
