@@ -87,6 +87,7 @@ function ContractorCard({
     .slice(0, 2)
     .map((word) => word.charAt(0))
     .join('')
+  const excerpts = card.evidence.filter((item) => item.field === 'description')
   return (
     <article className="contractor-card" aria-labelledby={'card-' + index}>
       <div className="card-top">
@@ -104,10 +105,17 @@ function ContractorCard({
           <small>за мероприятие</small>
         </div>
       </div>
+      {(card.synthetic || card.price_imputed || card.city_imputed) && (
+        <div className="data-badges" aria-label="Особенности данных">
+          {card.synthetic && <span className="data-badge">Вымышленный профиль</span>}
+          {card.price_imputed && <span className="data-badge">Цена подготовлена</span>}
+          {card.city_imputed && <span className="data-badge">Город подготовлен</span>}
+        </div>
+      )}
       <div className="facts">
-        <span className="available">
-          <Check size={14} aria-hidden="true" />
-          {alternative ? 'Предлагаемая дата: ' : 'Доступен '}
+        <span className={alternative ? 'proposed-date' : 'available'}>
+          <CalendarDays size={14} aria-hidden="true" />
+          {alternative ? 'Предлагаемая дата: ' : 'Свободно по каталогу: '}
           {formatDate(card.available_on)}
         </span>
         {card.languages.length > 0 && (
@@ -116,74 +124,86 @@ function ContractorCard({
             {card.languages.map(capitalize).join(', ')}
           </span>
         )}
-        {card.max_hours !== null && (
+        {card.max_hours !== null ? (
           <span>
             <Clock3 size={14} aria-hidden="true" />
             До {card.max_hours} ч
           </span>
+        ) : (
+          <span>Длительность присутствия не применяется</span>
         )}
       </div>
-      {alternative && (
-        <p className="alternative-description">{card.description || 'Описание не указано.'}</p>
-      )}
       <div className="explanation">
         <h4>
           <Sparkles size={14} aria-hidden="true" />
-          {alternative ? 'Об этом варианте' : 'Почему подходит'}
+          {alternative ? 'Почему подходит после изменений' : 'Почему подходит'}
         </h4>
         <p>{card.explanation || 'Объяснение не предоставлено.'}</p>
       </div>
+      {excerpts.length > 0 && (
+        <div className="source-facts">
+          <h4>Цитата из описания в каталоге</h4>
+          {excerpts.map((item, excerptIndex) => (
+            <blockquote key={excerptIndex}>{item.value}</blockquote>
+          ))}
+        </div>
+      )}
+      {(card.price_imputed || card.city_imputed) && (
+        <div className="data-notes">
+          {card.price_imputed && (
+            <p className="data-note">
+              <Info size={14} aria-hidden="true" />
+              Цена заполнена при подготовке каталога. Уточните стоимость у подрядчика.
+            </p>
+          )}
+          {card.city_imputed && (
+            <p className="data-note">
+              <Info size={14} aria-hidden="true" />
+              Город заполнен при подготовке каталога. Уточните место работы у подрядчика.
+            </p>
+          )}
+        </div>
+      )}
       <div className="card-bottom">
         <details className="contractor-details">
           <summary>
-            Подробнее о подрядчике <ChevronDown size={14} aria-hidden="true" />
+            Полное описание из каталога <ChevronDown size={14} aria-hidden="true" />
           </summary>
           <div className="description">
             <p>{card.description || 'Дополнительное описание не указано.'}</p>
-            {card.max_hours === null && (
-              <p className="data-note">Для этой услуги длительность присутствия не применяется.</p>
-            )}
-            {card.price_imputed && (
-              <p className="data-note">
-                <Info size={14} aria-hidden="true" />
-                Цена заполнена при подготовке каталога. Уточните стоимость у подрядчика.
-              </p>
-            )}
-            {card.city_imputed && (
-              <p className="data-note">
-                <Info size={14} aria-hidden="true" />
-                Город заполнен при подготовке каталога. Уточните место работы у подрядчика.
-              </p>
-            )}
           </div>
         </details>
-        <div className="data-badges">
-          {card.synthetic && <span className="data-badge">Вымышленный профиль</span>}
-          {(card.price_imputed || card.city_imputed) && (
-            <span className="data-badge subtle">Есть уточнения в описании</span>
-          )}
-        </div>
       </div>
     </article>
   )
 }
-function SuggestionChanges({ changes }: { changes: Suggestion['changes'] }) {
+function showCondition(field: FieldName, value: Query[FieldName] | undefined) {
+  return value === null || value === '' || value === undefined
+    ? 'без ограничений'
+    : field === 'date'
+      ? formatDate(String(value), true)
+      : field === 'budget_kzt'
+        ? formatMoney(Number(value))
+        : field === 'duration_hours'
+          ? value + ' ч'
+          : String(value)
+}
+function changesKey(changes: Suggestion['changes']) {
+  return JSON.stringify(Object.entries(changes).sort(([a], [b]) => a.localeCompare(b)))
+}
+function SuggestionChanges({ changes, query }: { changes: Suggestion['changes']; query: Query }) {
   return (
     <span className="suggestion-changes">
       {Object.entries(changes)
         .map(([key, value]) => {
           const field = key as FieldName
-          const shown =
-            value === null || value === ''
-              ? 'без ограничений'
-              : field === 'date'
-                ? formatDate(String(value), true)
-                : field === 'budget_kzt'
-                  ? formatMoney(Number(value))
-                  : field === 'duration_hours'
-                    ? value + ' ч'
-                    : String(value)
-          return fieldLabels[field] + ': ' + shown
+          return (
+            fieldLabels[field] +
+            ': ' +
+            showCondition(field, query[field]) +
+            ' → ' +
+            showCondition(field, value)
+          )
         })
         .join(' · ')}
     </span>
@@ -207,15 +227,34 @@ function Results({
   headingRef: React.RefObject<HTMLHeadingElement | null>
 }) {
   const cards = result?.cards.slice(0, 3) ?? []
+  const alternatives = result?.status === 'no_match' ? (result.alternatives ?? []) : []
+  const seenChanges = new Set(alternatives.map((alternative) => changesKey(alternative.changes)))
+  const suggestions = (result?.suggestions ?? []).filter((suggestion) => {
+    const key = changesKey(suggestion.changes)
+    if (!Object.keys(suggestion.changes).length || seenChanges.has(key)) return false
+    seenChanges.add(key)
+    return true
+  })
+  const outcomeTitles = {
+    matched: 'Подобрали по вашим условиям',
+    no_category: 'Такой категории в городе нет',
+    no_match: 'Кандидаты есть, условия не совпали',
+  }
   return (
     <section className="results" aria-labelledby="results-title" aria-busy={loading}>
       <div className="results-heading">
         <div>
           <p className="section-kicker">
-            <span>02</span>Подходящие люди
+            <span>02</span>Результат подбора
           </p>
           <h2 id="results-title" tabIndex={-1} ref={headingRef}>
-            {loading ? 'Ищем совпадения' : result ? 'Результаты подбора' : 'Ваша команда — здесь'}
+            {loading
+              ? 'Ищем совпадения'
+              : error
+                ? 'Подбор пока не завершён'
+                : result
+                  ? outcomeTitles[result.status]
+                  : 'Варианты для вашего события'}
           </h2>
         </div>
         {result?.status === 'matched' && (
@@ -224,11 +263,20 @@ function Results({
           </span>
         )}
       </div>
-      <div className="result-announcement" role="status" aria-live="polite">
+      <div
+        className={'result-announcement' + (result ? ' outcome-' + result.status : '')}
+        role="status"
+        aria-live="polite"
+      >
         {loading ? (
           <p>Проверяем условия и готовим объяснения…</p>
         ) : result ? (
-          <p>{result.summary}</p>
+          <>
+            {result.status === 'matched' && result.eligible_count < 3 && (
+              <strong>Почему меньше трёх</strong>
+            )}
+            <p>{result.summary}</p>
+          </>
         ) : null}
       </div>
       {loading ? (
@@ -246,7 +294,7 @@ function Results({
           <div className="state-icon">
             <Info />
           </div>
-          <h3>Подбор пока не завершён</h3>
+          <h3>Не удалось получить результат</h3>
           <p>{error}</p>
           <button className="secondary-button" onClick={onRetry}>
             <RotateCcw size={16} />
@@ -265,13 +313,19 @@ function Results({
               {formatDate(result.query.date)}
             </span>
             <span>до {formatMoney(result.query.budget_kzt)}</span>
+            <span>{result.query.category}</span>
+            <span>{capitalize(result.query.event_type)}</span>
+            <span>Язык: {showCondition('language', result.query.language)}</span>
+            <span>
+              Длительность: {showCondition('duration_hours', result.query.duration_hours)}
+            </span>
           </div>
           {result.status === 'matched' ? (
             <>
               {result.meta.explanation_mode === 'fallback' && (
                 <p className="fallback-note">
                   <Info size={15} aria-hidden="true" />
-                  Базовые объяснения по данным каталога.
+                  Базовые объяснения по данным каталога (fallback).
                 </p>
               )}
               <div className="cards">
@@ -285,7 +339,7 @@ function Results({
               </p>
             </>
           ) : (
-            <div className="state-panel empty-panel">
+            <div className={'state-panel empty-panel outcome-' + result.status}>
               <div className="state-icon">
                 {result.status === 'no_category' ? <MapPin /> : <SlidersHorizontal />}
               </div>
@@ -297,7 +351,7 @@ function Results({
               <p>
                 {result.status === 'no_category'
                   ? 'Попробуйте выбрать другой город или категорию подрядчика.'
-                  : 'Подрядчики есть, но сочетание даты, бюджета и других условий ограничивает выбор. Попробуйте изменить условия.'}
+                  : 'Ни один профиль не прошёл все условия. Причины исключения показаны ниже; у одного профиля их может быть несколько.'}
               </p>
               {result.status === 'no_match' && (
                 <div className="rejections" aria-label="Причины исключения">
@@ -308,9 +362,9 @@ function Results({
                         {
                           {
                             busy: 'Заняты на дату',
-                            budget: 'Выше бюджета',
-                            event_type: 'Другой тип события',
-                            language: 'Другой язык',
+                            budget: 'Стартовая цена выше бюджета',
+                            event_type: 'Не указан выбранный формат',
+                            language: 'Не указан выбранный язык',
                             duration: 'Не подходит длительность',
                           }[key]
                         }
@@ -321,20 +375,39 @@ function Results({
               )}
             </div>
           )}
-          {result.status === 'no_match' && Boolean(result.alternatives?.length) && (
-            <section className="alternatives" aria-label="Альтернативные подрядчики">
+          {(alternatives.length > 0 || suggestions.length > 0) && (
+            <section className="alternatives" aria-labelledby="alternatives-title">
               <div className="alternatives-heading">
                 <p className="eyebrow">ЕСЛИ МОЖНО ИЗМЕНИТЬ ПЛАНЫ</p>
-                <h3>Близкие варианты</h3>
+                <h3 id="alternatives-title">Варианты с изменением условий</h3>
                 <p>
-                  Эти специалисты не соответствуют всем исходным условиям. Ниже показано, что нужно
-                  изменить для каждого. Примените условия и запустите новый подбор.
+                  Это не точные совпадения. Проверенные по каталогу предложения требуют изменений.
+                  Кнопка только перенесёт указанные условия в форму. Затем отдельно нажмите
+                  «Подобрать подрядчиков».
                 </p>
               </div>
-              {result.alternatives?.map((alternative, index) => (
+              {suggestions.length > 0 && (
+                <div className="suggestions">
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={changesKey(suggestion.changes)}
+                      className="suggestion"
+                      onClick={() => onSuggestion(suggestion)}
+                    >
+                      <span>
+                        <b>{suggestion.label}</b>
+                        <SuggestionChanges changes={suggestion.changes} query={result.query} />
+                        <span className="suggestion-action">Применить условия</span>
+                      </span>
+                      <ArrowUpRight size={18} aria-hidden="true" />
+                    </button>
+                  ))}
+                </div>
+              )}
+              {alternatives.map((alternative, index) => (
                 <div className="alternative-option" key={alternative.card.id}>
                   <div className="alternative-differences">
-                    <b>Потребуется изменить условия</b>
+                    <b>Альтернатива · потребуется изменить условия</b>
                     <ul>
                       {alternative.differences.map((difference) => (
                         <li key={difference.field}>
@@ -347,13 +420,13 @@ function Results({
                       ))}
                     </ul>
                   </div>
-                  <ContractorCard card={alternative.card} index={index + 10} alternative />
                   {alternative.explanation_mode === 'fallback' && (
                     <p className="alternative-mode">
                       <Info size={14} aria-hidden="true" />
-                      Базовое объяснение по данным каталога.
+                      Базовое объяснение по данным каталога (fallback).
                     </p>
                   )}
+                  <ContractorCard card={alternative.card} index={index + 10} alternative />
                   <button
                     className="secondary-button apply-alternative"
                     onClick={() =>
@@ -372,23 +445,6 @@ function Results({
                 Цены указаны «от». Альтернатива не является бронированием.
               </p>
             </section>
-          )}
-          {result.suggestions.length > 0 && (
-            <div className="suggestions">
-              <h3>Можно попробовать иначе</h3>
-              <p>Нажатие изменит указанные поля. Затем запустите подбор.</p>
-              {result.suggestions
-                .filter((s) => Object.keys(s.changes).length > 0)
-                .map((s, index) => (
-                  <button key={index} className="suggestion" onClick={() => onSuggestion(s)}>
-                    <span>
-                      <b>{s.label}</b>
-                      <SuggestionChanges changes={s.changes} />
-                    </span>
-                    <ArrowUpRight size={18} aria-hidden="true" />
-                  </button>
-                ))}
-            </div>
           )}
         </>
       ) : (
@@ -414,8 +470,8 @@ function Results({
               <Asterisk size={29} />
             </div>
           </div>
-          <div className="eyebrow">НЕ ПРОСТО СПИСОК ИМЁН</div>
-          <h3>{dirty ? 'Обновим подбор под ваши планы' : 'Те, кто подойдёт именно вам'}</h3>
+          <div className="eyebrow">ПОДРЯДЧИКИ, ПЛОЩАДКИ И УСЛУГИ</div>
+          <h3>{dirty ? 'Обновим подбор под ваши планы' : 'Что подойдёт вашему событию'}</h3>
           <p>
             {dirty
               ? 'Условия изменены. Нажмите «Подобрать подрядчиков», чтобы получить актуальные результаты.'
@@ -497,7 +553,9 @@ export default function App({ client = api }: { client?: Api }) {
     setNotice('')
   }
   const focusError = (fields: FieldErrors) => {
-    const field = Object.keys(fields)[0]
+    const field = Array.from(
+      formRef.current?.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[name]') ?? [],
+    ).find((element) => fields[element.name as FieldName])?.name
     if (field) formRef.current?.querySelector<HTMLElement>('[name="' + field + '"]')?.focus()
   }
   const submit = async (event?: FormEvent) => {
@@ -532,6 +590,7 @@ export default function App({ client = api }: { client?: Api }) {
       setRequestError(failure.message)
       setErrors(failure.fields)
       if (Object.keys(failure.fields).length) focusError(failure.fields)
+      else requestAnimationFrame(() => resultsHeading.current?.focus())
     } finally {
       if (id === sequence.current) {
         activeRequest.current = null
@@ -545,9 +604,14 @@ export default function App({ client = api }: { client?: Api }) {
     setErrors({})
     setNotice(
       'Условия изменены: ' +
-        Object.keys(suggestion.changes)
-          .map((key) => fieldLabels[key as FieldName].toLowerCase())
-          .join(', ') +
+        Object.entries(suggestion.changes)
+          .map(
+            ([key, value]) =>
+              fieldLabels[key as FieldName].toLowerCase() +
+              ' — ' +
+              showCondition(key as FieldName, value),
+          )
+          .join('; ') +
         '. Нажмите «Подобрать подрядчиков».',
     )
     requestAnimationFrame(() => {
@@ -610,12 +674,12 @@ export default function App({ client = api }: { client?: Api }) {
           <div>
             <p className="eyebrow">
               <span />
-              ЛЮДИ, С КОТОРЫМИ ВСЁ СЛОЖИТСЯ
+              ПОДРЯДЧИКИ, ПЛОЩАДКИ И УСЛУГИ
             </p>
             <h1 id="hero-title">
               Ваше событие.
               <br />
-              <em>Подходящие люди.</em>
+              <em>Подходящие решения.</em>
             </h1>
             <p className="hero-copy">
               Расскажите о планах — найдём подрядчиков
@@ -680,14 +744,14 @@ export default function App({ client = api }: { client?: Api }) {
                 </div>
                 {options && (
                   <p className="calendar-note">
-                    Календарь: {formatDate(options.calendar.min)} —{' '}
+                    Календарь каталога: {formatDate(options.calendar.min)} —{' '}
                     {formatDate(options.calendar.max, true)}
                   </p>
                 )}
                 <Field name="event_type" label="Тип мероприятия" error={errors.event_type}>
                   {select('event_type', options?.event_types ?? [], 'Какое событие планируете?')}
                 </Field>
-                <Field name="category" label="Кого ищем?" error={errors.category}>
+                <Field name="category" label="Категория" error={errors.category}>
                   {select('category', options?.categories ?? [], 'Выберите категорию')}
                 </Field>
                 <Field
@@ -783,7 +847,7 @@ export default function App({ client = api }: { client?: Api }) {
           <span className="footer-brand">
             сәт <span>Умный подбор подрядчиков</span>
           </span>
-          <span>Хорошее событие начинается с людей.</span>
+          <span>Хорошее событие начинается с выбора.</span>
         </footer>
       </main>
       <dialog
@@ -804,7 +868,7 @@ export default function App({ client = api }: { client?: Api }) {
         <div className="state-icon">
           <Search />
         </div>
-        <h2 id="how-title">От планов — к людям</h2>
+        <h2 id="how-title">От планов — к подходящим решениям</h2>
         <ol>
           <li>
             <b>Расскажите о событии.</b> Укажите город, дату, категорию, тип мероприятия и бюджет.

@@ -524,6 +524,7 @@ textarea {
 }
 .results-heading {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 15px;
@@ -542,10 +543,45 @@ textarea {
   color: #58694e;
 }
 .result-announcement > p {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--muted);
   line-height: 1.7;
   margin-top: 9px;
+}
+.result-announcement[class*='outcome-'] {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border: 1px solid #cedbc1;
+  border-left: 4px solid #63804e;
+  border-radius: 10px;
+  background: #edf3e5;
+}
+.result-announcement[class*='outcome-'] > p {
+  margin-top: 0;
+  color: var(--ink);
+}
+.result-announcement > strong {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+.outcome-no_category,
+.result-announcement.outcome-no_category {
+  background: #f1eff6;
+  border-color: #cbc4db;
+}
+.outcome-no_match,
+.result-announcement.outcome-no_match {
+  background: #faf4e7;
+  border-color: #d7bf88;
+}
+.outcome-no_category .state-icon {
+  background: #e6e1ef;
+  color: #615078;
+}
+.outcome-no_match .state-icon {
+  background: #eee0bd;
+  color: #705b2b;
 }
 .query-chips {
   display: flex;
@@ -658,14 +694,13 @@ textarea {
 }
 .explanation {
   background: #f0f4e8;
-  border: 1px solid #ebf0e2;
+  border: 1px solid #d3dfc3;
+  border-left: 3px solid #63804e;
   border-radius: 10px;
   padding: 12px 14px;
 }
 .explanation h4 {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
+  font-size: 13px;
   font-weight: 700;
   display: flex;
   gap: 6px;
@@ -674,11 +709,34 @@ textarea {
   margin-bottom: 6px;
 }
 .explanation p {
-  font-size: 12px;
+  font-size: 14px;
   line-height: 1.65;
   color: #43533c;
   white-space: pre-line;
   overflow-wrap: anywhere;
+}
+.source-facts {
+  margin-top: 15px;
+}
+.source-facts h4 {
+  font-size: 12px;
+  color: #53634c;
+}
+.source-facts blockquote {
+  margin: 8px 0 0;
+  padding-left: 12px;
+  border-left: 2px solid #b9c9a6;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.data-notes {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12px;
+  line-height: 1.6;
 }
 .card-bottom {
   display: flex;
@@ -739,7 +797,7 @@ textarea {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
-  padding-top: 3px;
+  margin-top: 12px;
 }
 .data-badge {
   border: 1px solid #e4dfd0;
@@ -747,7 +805,7 @@ textarea {
   border-radius: 4px;
   color: #766645;
   padding: 3px 6px;
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1.2;
 }
 .data-badge.subtle {
@@ -973,15 +1031,11 @@ textarea {
 .suggestions {
   margin-top: 22px;
 }
-.suggestions h3 {
-  font-size: 15px;
-  margin-bottom: 6px;
-}
-.suggestions > p {
-  font-size: 11px;
-  color: var(--muted);
-  line-height: 1.5;
-  margin-bottom: 12px;
+.suggestion-action {
+  display: block;
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 600;
 }
 .suggestion {
   display: flex;
@@ -1240,9 +1294,6 @@ footer {
   .contractor-card {
     padding: 23px 25px;
   }
-  .explanation p {
-    font-size: 13px;
-  }
   .facts {
     font-size: 11px;
   }
@@ -1451,12 +1502,6 @@ footer {
     font-size: 11px;
     gap: 8px 17px;
   }
-  .explanation p {
-    font-size: 13px;
-  }
-  .explanation h4 {
-    font-size: 10px;
-  }
   .query-chips > span {
     font-size: 11px;
   }
@@ -1559,8 +1604,8 @@ footer {
     padding-top: 0;
   }
   .count-pill {
-    font-size: 9px;
-    margin-top: 24px;
+    font-size: 11px;
+    margin-top: 4px;
   }
   .results-heading {
     gap: 6px;
@@ -1691,29 +1736,42 @@ footer {
   box-shadow: none;
   margin: 0;
 }
-.alternative-description {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #53634c;
-  margin-bottom: 14px;
-  overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
 .alternative-mode {
   display: flex;
   gap: 6px;
   align-items: start;
-  margin: 0 22px 16px;
+  margin: 16px 22px 0;
   color: #5b674e;
   font-size: 11px;
   line-height: 1.6;
 }
+.alternative-option .explanation {
+  background: #faf6eb;
+  border-color: #d7c59f;
+}
+.facts .proposed-date {
+  color: #765b2b;
+}
+.results,
+.hero h1,
+.apply-alternative {
+  overflow-wrap: anywhere;
+}
+.suggestion > span {
+  min-width: 0;
+}
 .alternative-option .avatar {
   background: #e5eadb;
   color: #41553b;
+}
+@media (max-width: 420px) {
+  .form-grid:not(.optional-grid) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 17px;
+  }
+  .hero h1 {
+    font-size: 38px;
+  }
 }
 .apply-alternative {
   display: flex;
