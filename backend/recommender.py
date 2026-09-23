@@ -2,8 +2,8 @@ import re
 from dataclasses import dataclass
 from datetime import timedelta
 
-from .catalog import CALENDAR_MAX, Catalog, Contractor
-from .models import Query, Rejections, Suggestion
+from .catalog import CALENDAR_MAX, CALENDAR_MIN, Catalog, Contractor
+from .models import Difference, Query, Rejections, Suggestion
 
 STOPWORDS = {"для", "это", "как", "что", "чтобы", "или", "без", "нужен", "нужна", "нужно", "хочу", "нам", "при", "под", "его", "она", "они", "так", "все", "наш", "наша"}
 REJECTION_LABELS = {"busy": "заняты на выбранную дату", "budget": "стартовая цена выше бюджета",
@@ -89,3 +89,49 @@ def alternatives(catalog: Catalog, query: Query, selection: Selection) -> list[S
             return [Suggestion(label=f"Проверить {candidate_date.strftime('%d.%m.%Y')}",
                                changes={"date": candidate_date.isoformat()})]
     return []
+
+
+def nearby_candidates(query: Query, selection: Selection):
+    """Separate counterfactuals: each candidate passes EVERY explicitly proposed condition."""
+    if selection.status != "no_match":
+        return []
+    candidates = []
+    dates = [CALENDAR_MIN + timedelta(days=i) for i in range((CALENDAR_MAX - CALENDAR_MIN).days + 1)]
+    # Equal distances prefer a later date. No claim of availability outside the known calendar.
+    dates.sort(key=lambda day: (abs((day - query.date).days), day < query.date, day))
+    for item in selection.base:
+        if query.event_type not in item.event_formats:
+            continue
+        changes = {}
+        differences = []
+        penalty = 0.0
+        if query.date in item.busy_dates:
+            available = next((day for day in dates if day not in item.busy_dates), None)
+            if available is None:
+                continue
+            changes["date"] = available.isoformat()
+            differences.append(Difference(field="date", requested=query.date.strftime("%d.%m.%Y"),
+                                          proposed=available.strftime("%d.%m.%Y"), reason="На исходную дату подрядчик занят"))
+            penalty += abs((available - query.date).days) / 7
+        if item.price_from_kzt > query.budget_kzt:
+            changes["budget_kzt"] = item.price_from_kzt
+            differences.append(Difference(field="budget_kzt", requested=f"{query.budget_kzt:,} ₸".replace(",", " "),
+                                          proposed=f"{item.price_from_kzt:,} ₸".replace(",", " "), reason="Стартовая цена выше исходного бюджета"))
+            penalty += (item.price_from_kzt - query.budget_kzt) / query.budget_kzt
+        if query.language and query.language not in item.languages:
+            language = sorted(item.languages)[0]
+            changes["language"] = language
+            differences.append(Difference(field="language", requested=query.language, proposed=language,
+                                          reason="Исходный язык не указан в профиле"))
+            penalty += 1
+        if query.duration_hours is not None and item.max_hours is not None and query.duration_hours > item.max_hours:
+            changes["duration_hours"] = item.max_hours
+            differences.append(Difference(field="duration_hours", requested=f"{query.duration_hours:g} ч",
+                                          proposed=f"{item.max_hours:g} ч", reason="Подрядчик работает меньше запрошенной длительности"))
+            penalty += (query.duration_hours - item.max_hours) / query.duration_hours
+        proposed = Query.model_validate({**query.model_dump(), **changes})
+        if not changes or rejection_reasons(item, proposed):
+            continue
+        candidates.append(((len(changes), penalty, item.price_from_kzt, item.id), item, proposed, changes, differences))
+    candidates.sort(key=lambda value: value[0])
+    return [(item, proposed, changes, differences) for _, item, proposed, changes, differences in candidates[:3]]

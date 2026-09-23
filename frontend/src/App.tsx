@@ -39,6 +39,7 @@ import {
   type Suggestion,
 } from './contracts'
 import type { Scenario } from './mocks/fixtures'
+import { AdminPage, ApplicationPage } from './PlatformPages'
 
 const isDemo = import.meta.env.DEV && import.meta.env.VITE_MOCK_MODE === 'true'
 const scenarios: { value: Scenario; label: string }[] = [
@@ -86,7 +87,15 @@ function Field({
     </div>
   )
 }
-function ContractorCard({ card, index }: { card: Contractor; index: number }) {
+function ContractorCard({
+  card,
+  index,
+  alternative = false,
+}: {
+  card: Contractor
+  index: number
+  alternative?: boolean
+}) {
   const initials = card.name
     .split(/\s+/)
     .slice(0, 2)
@@ -130,7 +139,7 @@ function ContractorCard({ card, index }: { card: Contractor; index: number }) {
       <div className="explanation">
         <h4>
           <Sparkles size={14} aria-hidden="true" />
-          Почему подходит
+          {alternative ? 'Об этом варианте' : 'Почему подходит'}
         </h4>
         <p>{card.explanation || 'Объяснение не предоставлено.'}</p>
       </div>
@@ -322,7 +331,53 @@ function Results({
               )}
             </div>
           )}
-          {result.suggestions.length > 0 && (
+          {result.status === 'no_match' && Boolean(result.alternatives?.length) && (
+            <section className="alternatives" aria-label="Альтернативные подрядчики">
+              <div className="alternatives-heading">
+                <p className="eyebrow">ЕСЛИ МОЖНО ИЗМЕНИТЬ ПЛАНЫ</p>
+                <h3>Близкие варианты</h3>
+                <p>
+                  Эти специалисты не соответствуют всем исходным условиям. Ниже показано, что нужно
+                  изменить для каждого. Примените условия и запустите новый подбор.
+                </p>
+              </div>
+              {result.alternatives?.map((alternative, index) => (
+                <div className="alternative-option" key={alternative.card.id}>
+                  <div className="alternative-differences">
+                    <b>Потребуется изменить условия</b>
+                    <ul>
+                      {alternative.differences.map((difference) => (
+                        <li key={difference.field}>
+                          <strong>
+                            {fieldLabels[difference.field]}: {difference.requested} →{' '}
+                            {difference.proposed}
+                          </strong>
+                          <span>{difference.reason}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <ContractorCard card={alternative.card} index={index + 10} alternative />
+                  <button
+                    className="secondary-button apply-alternative"
+                    onClick={() =>
+                      onSuggestion({
+                        label: 'Условия для ' + alternative.card.name,
+                        changes: alternative.changes,
+                      })
+                    }
+                  >
+                    Применить условия для {alternative.card.name}
+                    <ArrowUpRight size={16} />
+                  </button>
+                </div>
+              ))}
+              <p className="results-footnote">
+                Цены указаны «от». Альтернатива не является бронированием.
+              </p>
+            </section>
+          )}
+          {result.suggestions.length > 0 && !result.alternatives?.length && (
             <div className="suggestions">
               <h3>Можно попробовать иначе</h3>
               <p>Нажатие изменит указанные поля. Затем запустите подбор.</p>
@@ -389,6 +444,13 @@ function Results({
 }
 
 export default function App({ client = api }: { client?: Api }) {
+  const [route, setRoute] = useState(() =>
+    window.location.hash === '#/apply'
+      ? 'apply'
+      : window.location.hash === '#/admin'
+        ? 'admin'
+        : 'search',
+  )
   const [options, setOptions] = useState<Options | null>(null)
   const [optionsError, setOptionsError] = useState<string | null>(null)
   const [optionsAttempt, setOptionsAttempt] = useState(0)
@@ -405,6 +467,23 @@ export default function App({ client = api }: { client?: Api }) {
   const formRef = useRef<HTMLFormElement>(null)
   const resultsHeading = useRef<HTMLHeadingElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const navigate = () => {
+      if (['#/apply', '#/admin', '#/', ''].includes(window.location.hash)) {
+        setRoute(
+          window.location.hash === '#/apply'
+            ? 'apply'
+            : window.location.hash === '#/admin'
+              ? 'admin'
+              : 'search',
+        )
+        window.scrollTo?.(0, 0)
+      }
+    }
+    window.addEventListener('hashchange', navigate)
+    return () => window.removeEventListener('hashchange', navigate)
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -544,8 +623,8 @@ export default function App({ client = api }: { client?: Api }) {
 
   return (
     <>
-      <a href="#event-form" className="skip-link">
-        Перейти к подбору
+      <a href={route === 'search' ? '#event-form' : '#platform-main'} className="skip-link">
+        {route === 'search' ? 'Перейти к подбору' : 'Перейти к содержимому'}
       </a>
       {isDemo && (
         <div className="demo-toolbar">
@@ -571,221 +650,255 @@ export default function App({ client = api }: { client?: Api }) {
       )}
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href="#top" aria-label="сәт — главная">
+          <a className="brand" href="#/" aria-label="сәт — главная">
             <span>
               <Asterisk size={27} strokeWidth={2} />
             </span>
             сәт<span className="brand-dot">.</span>
           </a>
           <nav aria-label="Основная навигация">
-            <a className="active-nav" href="#event-form">
+            <a
+              className={route === 'search' ? 'active-nav' : ''}
+              aria-current={route === 'search' ? 'page' : undefined}
+              href="#/"
+            >
               Подбор подрядчиков
             </a>
-            <button onClick={() => dialog.current?.showModal()}>
-              Как это работает
-              <ArrowUpRight size={15} aria-hidden="true" />
-            </button>
+            <a
+              className={route === 'apply' ? 'active-nav' : ''}
+              aria-current={route === 'apply' ? 'page' : undefined}
+              href="#/apply"
+            >
+              Стать подрядчиком
+            </a>
+            <a
+              className={route === 'admin' ? 'active-nav' : ''}
+              aria-current={route === 'admin' ? 'page' : undefined}
+              href="#/admin"
+            >
+              Администратор
+            </a>
+            {route === 'search' && (
+              <button onClick={() => dialog.current?.showModal()}>
+                Как это работает
+                <ArrowUpRight size={15} aria-hidden="true" />
+              </button>
+            )}
           </nav>
           <span className="header-mark">Создано для ваших событий</span>
         </div>
       </header>
-      <main id="top">
-        <section className="hero" aria-labelledby="hero-title">
-          <div>
-            <p className="eyebrow">
-              <span />
-              ЛЮДИ, С КОТОРЫМИ ВСЁ СЛОЖИТСЯ
-            </p>
-            <h1 id="hero-title">
-              Ваше событие.
-              <br />
-              <em>Подходящие люди.</em>
-            </h1>
-            <p className="hero-copy">
-              Расскажите о планах — найдём подрядчиков
-              <br className="desktop-break" /> и объясним, почему они вам подходят.
-            </p>
-          </div>
-          <div className="hero-aside" aria-hidden="true">
-            <div className="orbital-line" />
-            <div className="event-seal">
-              <Asterisk size={24} />
-              <span>Меньше поиска.</span>
-              <b>
-                Больше
+      {route === 'apply' ? (
+        <ApplicationPage
+          options={options}
+          error={optionsError}
+          onRetry={() => setOptionsAttempt((n) => n + 1)}
+        />
+      ) : route === 'admin' ? (
+        <AdminPage
+          options={options}
+          optionsError={optionsError}
+          onRetry={() => setOptionsAttempt((n) => n + 1)}
+        />
+      ) : (
+        <main id="top">
+          <section className="hero" aria-labelledby="hero-title">
+            <div>
+              <p className="eyebrow">
+                <span />
+                ЛЮДИ, С КОТОРЫМИ ВСЁ СЛОЖИТСЯ
+              </p>
+              <h1 id="hero-title">
+                Ваше событие.
                 <br />
-                совпадений.
-              </b>
-              <span className="seal-line" />
-            </div>
-            <span className="floating-star">✳</span>
-          </div>
-        </section>
-        <div className="workspace">
-          <aside className="form-panel">
-            <div className="panel-heading">
-              <p className="section-kicker">
-                <span>01</span>Детали мероприятия
+                <em>Подходящие люди.</em>
+              </h1>
+              <p className="hero-copy">
+                Расскажите о планах — найдём подрядчиков
+                <br className="desktop-break" /> и объясним, почему они вам подходят.
               </p>
-              <h2>О вашем событии</h2>
-              <p>Начнём с того, что для вас важно.</p>
             </div>
-            {optionsError && (
-              <div className="options-error" role="alert">
-                <Info size={18} />
-                <p>{optionsError}</p>
-                <button className="text-button" onClick={() => setOptionsAttempt((n) => n + 1)}>
-                  Повторить загрузку
-                </button>
+            <div className="hero-aside" aria-hidden="true">
+              <div className="orbital-line" />
+              <div className="event-seal">
+                <Asterisk size={24} />
+                <span>Меньше поиска.</span>
+                <b>
+                  Больше
+                  <br />
+                  совпадений.
+                </b>
+                <span className="seal-line" />
               </div>
-            )}
-            {!options && !optionsError && (
-              <p className="options-loading" role="status">
-                <LoaderCircle className="spin" size={17} />
-                Загружаем параметры…
-              </p>
-            )}
-            <form id="event-form" ref={formRef} onSubmit={submit} noValidate>
-              <fieldset disabled={!options}>
-                <legend className="sr-only">Условия подбора подрядчиков</legend>
-                <div className="form-grid">
-                  <Field name="city" label="Город" error={errors.city}>
-                    {select('city', options?.cities ?? [], 'Выберите город')}
-                  </Field>
-                  <Field name="date" label="Дата" error={errors.date}>
-                    <input
-                      type="date"
-                      required
-                      min={options?.calendar.min}
-                      max={options?.calendar.max}
-                      {...attrs('date')}
-                    />
-                  </Field>
+              <span className="floating-star">✳</span>
+            </div>
+          </section>
+          <div className="workspace">
+            <aside className="form-panel">
+              <div className="panel-heading">
+                <p className="section-kicker">
+                  <span>01</span>Детали мероприятия
+                </p>
+                <h2>О вашем событии</h2>
+                <p>Начнём с того, что для вас важно.</p>
+              </div>
+              {optionsError && (
+                <div className="options-error" role="alert">
+                  <Info size={18} />
+                  <p>{optionsError}</p>
+                  <button className="text-button" onClick={() => setOptionsAttempt((n) => n + 1)}>
+                    Повторить загрузку
+                  </button>
                 </div>
-                {options && (
-                  <p className="calendar-note">
-                    Календарь: {formatDate(options.calendar.min)} —{' '}
-                    {formatDate(options.calendar.max, true)}
-                  </p>
-                )}
-                <Field name="event_type" label="Тип мероприятия" error={errors.event_type}>
-                  {select('event_type', options?.event_types ?? [], 'Какое событие планируете?')}
-                </Field>
-                <Field name="category" label="Кого ищем?" error={errors.category}>
-                  {select('category', options?.categories ?? [], 'Выберите категорию')}
-                </Field>
-                <Field
-                  name="budget_kzt"
-                  label="Бюджет до"
-                  error={errors.budget_kzt}
-                  hint="За мероприятие, в тенге"
-                >
-                  <div className="input-unit">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="off"
-                      required
-                      placeholder="Например, 500 000"
-                      {...attrs('budget_kzt', true)}
-                    />
-                    <span aria-hidden="true">₸</span>
+              )}
+              {!options && !optionsError && (
+                <p className="options-loading" role="status">
+                  <LoaderCircle className="spin" size={17} />
+                  Загружаем параметры…
+                </p>
+              )}
+              <form id="event-form" ref={formRef} onSubmit={submit} noValidate>
+                <fieldset disabled={!options}>
+                  <legend className="sr-only">Условия подбора подрядчиков</legend>
+                  <div className="form-grid">
+                    <Field name="city" label="Город" error={errors.city}>
+                      {select('city', options?.cities ?? [], 'Выберите город')}
+                    </Field>
+                    <Field name="date" label="Дата" error={errors.date}>
+                      <input
+                        type="date"
+                        required
+                        min={options?.calendar.min}
+                        max={options?.calendar.max}
+                        {...attrs('date')}
+                      />
+                    </Field>
                   </div>
-                </Field>
-                <div className="optional-divider">
-                  <span>Дополнительно · необязательно</span>
-                </div>
-                <div className="form-grid optional-grid">
-                  <Field name="language" label="Язык" error={errors.language}>
-                    {select('language', options?.languages ?? [], 'Неважно', true)}
+                  {options && (
+                    <p className="calendar-note">
+                      Календарь: {formatDate(options.calendar.min)} —{' '}
+                      {formatDate(options.calendar.max, true)}
+                    </p>
+                  )}
+                  <Field name="event_type" label="Тип мероприятия" error={errors.event_type}>
+                    {select('event_type', options?.event_types ?? [], 'Какое событие планируете?')}
+                  </Field>
+                  <Field name="category" label="Кого ищем?" error={errors.category}>
+                    {select('category', options?.categories ?? [], 'Выберите категорию')}
                   </Field>
                   <Field
-                    name="duration_hours"
-                    label="Длительность, ч"
-                    error={errors.duration_hours}
+                    name="budget_kzt"
+                    label="Бюджет до"
+                    error={errors.budget_kzt}
+                    hint="За мероприятие, в тенге"
                   >
-                    <input
-                      type="text"
-                      inputMode="decimal"
-                      placeholder="Неважно"
-                      {...attrs('duration_hours')}
-                    />
+                    <div className="input-unit">
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="off"
+                        required
+                        placeholder="Например, 500 000"
+                        {...attrs('budget_kzt', true)}
+                      />
+                      <span aria-hidden="true">₸</span>
+                    </div>
                   </Field>
-                </div>
-                <Field
-                  name="preferences"
-                  label="Что ещё важно?"
-                  optional
-                  error={errors.preferences}
-                >
-                  <textarea
-                    rows={3}
-                    maxLength={500}
-                    placeholder="Атмосфера, стиль, особые пожелания…"
-                    {...attrs('preferences')}
-                  />
-                  <span className="character-count" aria-hidden="true">
-                    {form.preferences.length}/500
-                  </span>
-                </Field>
-                {notice && (
-                  <p className="form-notice" role="status">
-                    {notice}
-                  </p>
-                )}
-                {Object.values(errors).some(Boolean) && (
-                  <p className="validation-summary" role="alert">
-                    Проверьте отмеченные поля.
-                  </p>
-                )}
-                <button type="submit" className="primary-button" disabled={!options || loading}>
-                  {loading ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}
-                  <span>{loading ? 'Подбираем…' : 'Подобрать подрядчиков'}</span>
-                  {!loading && <ArrowRight size={18} />}
-                </button>
-                <p className="form-footnote">Учитываем дату, бюджет и ваши условия</p>
-              </fieldset>
-            </form>
-          </aside>
-          <Results
-            result={result}
-            loading={loading}
-            error={requestError}
-            dirty={dirty}
-            onSuggestion={applySuggestion}
-            onRetry={() => void submit()}
-            headingRef={resultsHeading}
-          />
-        </div>
-        <section className="how-strip" aria-label="Как устроен подбор">
-          <div>
-            <span>01</span>
-            <p>
-              <b>Ваши условия</b>Город, дата и бюджет
-            </p>
+                  <div className="optional-divider">
+                    <span>Дополнительно · необязательно</span>
+                  </div>
+                  <div className="form-grid optional-grid">
+                    <Field name="language" label="Язык" error={errors.language}>
+                      {select('language', options?.languages ?? [], 'Неважно', true)}
+                    </Field>
+                    <Field
+                      name="duration_hours"
+                      label="Длительность, ч"
+                      error={errors.duration_hours}
+                    >
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="Неважно"
+                        {...attrs('duration_hours')}
+                      />
+                    </Field>
+                  </div>
+                  <Field
+                    name="preferences"
+                    label="Что ещё важно?"
+                    optional
+                    error={errors.preferences}
+                  >
+                    <textarea
+                      rows={3}
+                      maxLength={500}
+                      placeholder="Атмосфера, стиль, особые пожелания…"
+                      {...attrs('preferences')}
+                    />
+                    <span className="character-count" aria-hidden="true">
+                      {form.preferences.length}/500
+                    </span>
+                  </Field>
+                  {notice && (
+                    <p className="form-notice" role="status">
+                      {notice}
+                    </p>
+                  )}
+                  {Object.values(errors).some(Boolean) && (
+                    <p className="validation-summary" role="alert">
+                      Проверьте отмеченные поля.
+                    </p>
+                  )}
+                  <button type="submit" className="primary-button" disabled={!options || loading}>
+                    {loading ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}
+                    <span>{loading ? 'Подбираем…' : 'Подобрать подрядчиков'}</span>
+                    {!loading && <ArrowRight size={18} />}
+                  </button>
+                  <p className="form-footnote">Учитываем дату, бюджет и ваши условия</p>
+                </fieldset>
+              </form>
+            </aside>
+            <Results
+              result={result}
+              loading={loading}
+              error={requestError}
+              dirty={dirty}
+              onSuggestion={applySuggestion}
+              onRetry={() => void submit()}
+              headingRef={resultsHeading}
+            />
           </div>
-          <ArrowRight size={17} aria-hidden="true" />
-          <div>
-            <span>02</span>
-            <p>
-              <b>Точные совпадения</b>До трёх подходящих вариантов
-            </p>
-          </div>
-          <ArrowRight size={17} aria-hidden="true" />
-          <div>
-            <span>03</span>
-            <p>
-              <b>Понятный выбор</b>Объяснение для каждого
-            </p>
-          </div>
-        </section>
-        <footer>
-          <span className="footer-brand">
-            сәт <span>Умный подбор подрядчиков</span>
-          </span>
-          <span>Хорошее событие начинается с людей.</span>
-        </footer>
-      </main>
+          <section className="how-strip" aria-label="Как устроен подбор">
+            <div>
+              <span>01</span>
+              <p>
+                <b>Ваши условия</b>Город, дата и бюджет
+              </p>
+            </div>
+            <ArrowRight size={17} aria-hidden="true" />
+            <div>
+              <span>02</span>
+              <p>
+                <b>Точные совпадения</b>До трёх подходящих вариантов
+              </p>
+            </div>
+            <ArrowRight size={17} aria-hidden="true" />
+            <div>
+              <span>03</span>
+              <p>
+                <b>Понятный выбор</b>Объяснение для каждого
+              </p>
+            </div>
+          </section>
+          <footer>
+            <span className="footer-brand">
+              сәт <span>Умный подбор подрядчиков</span>
+            </span>
+            <span>Хорошее событие начинается с людей.</span>
+          </footer>
+        </main>
+      )}
       <dialog
         ref={dialog}
         className="how-dialog"

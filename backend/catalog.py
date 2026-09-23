@@ -1,5 +1,6 @@
 import csv
 import hashlib
+import json
 from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
@@ -81,11 +82,25 @@ class Catalog:
                     raise ValueError(f"Invalid CSV record on line {line}: {exc}") from exc
         if not records:
             raise ValueError("Catalog is empty")
+        self._set_records(records)
+
+    def _set_records(self, records, vocabulary=None):
         self.records = tuple(records)
-        self.cities = sorted({r.city for r in records})
-        self.categories = sorted({c for r in records for c in r.categories})
-        self.event_types = sorted({c for r in records for c in r.event_formats})
-        self.languages = sorted({c for r in records for c in r.languages})
+        self.cities = sorted({r.city for r in records}) if vocabulary is None else vocabulary["cities"]
+        self.categories = sorted({c for r in records for c in r.categories}) if vocabulary is None else vocabulary["categories"]
+        self.event_types = sorted({c for r in records for c in r.event_formats}) if vocabulary is None else vocabulary["event_types"]
+        self.languages = sorted({c for r in records for c in r.languages}) if vocabulary is None else vocabulary["languages"]
+
+    @classmethod
+    def from_records(cls, records, vocabulary):
+        """An immutable snapshot of approved SQL records; safe even for an empty catalogue."""
+        instance = cls.__new__(cls)
+        records = sorted(records, key=lambda record: record.id)
+        payload = [{**vars(record), "busy_dates": sorted(day.isoformat() for day in record.busy_dates)}
+                   for record in records]
+        instance.version = hashlib.sha256(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode()).hexdigest()
+        instance._set_records(records, vocabulary)
+        return instance
 
     def options(self) -> dict:
         return {"cities": self.cities, "categories": self.categories,

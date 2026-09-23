@@ -1,10 +1,11 @@
 import asyncio
 import json
+from pathlib import Path
 
 import httpx
 import pytest
 
-from backend.app import create_app
+from backend.catalog import Catalog
 from backend.explainer import Choice, Explainer, Settings, compose, excerpts
 from backend.models import Query
 from backend.recommender import select
@@ -12,7 +13,7 @@ from backend.tests.test_api import BASE
 
 
 def context():
-    catalog = create_app(settings=Settings()).state.catalog
+    catalog = Catalog(Path(__file__).resolve().parents[2] / "data" / "contractors.csv")
     query = Query(**BASE)
     return catalog, query, select(catalog, query).eligible[:3]
 

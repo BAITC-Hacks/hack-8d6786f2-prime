@@ -35,6 +35,23 @@ export const cardSchema = z.object({
   price_imputed: z.boolean(),
   city_imputed: z.boolean(),
 })
+export const alternativeSchema = z.object({
+  card: cardSchema,
+  changes: querySchema
+    .pick({ date: true, budget_kzt: true, language: true, duration_hours: true })
+    .partial(),
+  differences: z
+    .array(
+      z.object({
+        field: z.enum(['date', 'budget_kzt', 'language', 'duration_hours']),
+        requested: z.string(),
+        proposed: z.string(),
+        reason: z.string(),
+      }),
+    )
+    .min(1),
+  explanation_mode: z.enum(['llm', 'fallback']),
+})
 export const recommendationSchema = z
   .object({
     status: z.enum(['matched', 'no_category', 'no_match']),
@@ -51,6 +68,7 @@ export const recommendationSchema = z
       duration: z.number().int().nonnegative(),
     }),
     suggestions: z.array(z.object({ label: z.string(), changes: querySchema.partial() })),
+    alternatives: z.array(alternativeSchema).max(3).optional(),
     meta: z.object({
       dataset_version: z.string(),
       explanation_mode: z.enum(['llm', 'fallback']),

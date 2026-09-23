@@ -13,8 +13,8 @@ BASE = {"city": "Алматы", "date": "2026-11-14", "event_type": "корпо�
 
 
 @pytest.fixture
-def client():
-    return TestClient(create_app(settings=Settings(api_key="")))
+def client(tmp_path):
+    return TestClient(create_app(settings=Settings(api_key=""), db_path=tmp_path / "catalog.sqlite3", admin_token=""))
 
 
 def recommend(client, **updates):
@@ -38,7 +38,7 @@ def test_dense_category_and_stable_order(client):
     assert result["eligible_count"] == 4
     assert [r["id"] for r in result["cards"]] == ["HK-44923", "HK-29829", "HK-27222"]
     assert [r["id"] for r in recommend(client)["cards"]] == [r["id"] for r in result["cards"]]
-    restarted = TestClient(create_app(settings=Settings(api_key="")))
+    restarted = TestClient(create_app(settings=Settings(api_key=""), db_path=client.app.state.store.path, admin_token=""))
     assert [r["id"] for r in recommend(restarted)["cards"]] == [r["id"] for r in result["cards"]]
     assert result["meta"]["explanation_mode"] == "fallback"
     for card in result["cards"]:

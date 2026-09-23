@@ -91,6 +91,20 @@ class Suggestion(BaseModel):
     changes: dict[str, str | float | int | None]
 
 
+class Difference(BaseModel):
+    field: Literal["date", "budget_kzt", "language", "duration_hours"]
+    requested: str
+    proposed: str
+    reason: str
+
+
+class Alternative(BaseModel):
+    card: Card
+    changes: dict[str, str | float | int | None]
+    differences: list[Difference]
+    explanation_mode: Literal["fallback"] = "fallback"
+
+
 class Recommendation(BaseModel):
     status: Literal["matched", "no_category", "no_match"]
     query: Query
@@ -101,3 +115,4 @@ class Recommendation(BaseModel):
     rejections: Rejections
     suggestions: list[Suggestion]
     meta: Meta
+    alternatives: list[Alternative] = Field(default_factory=list)
