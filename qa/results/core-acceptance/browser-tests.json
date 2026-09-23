@@ -1,0 +1,222 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "$QA_WORKSPACE/work/qa-publish/frontend/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "$QA_WORKSPACE/work/qa-publish/qa/playwright.config.cjs",
+      "--config",
+      "../qa/core-acceptance.playwright.cjs",
+      "--reporter=list,json"
+    ],
+    "configFile": "$QA_WORKSPACE/work/qa-publish/qa/core-acceptance.playwright.cjs",
+    "rootDir": "$QA_WORKSPACE/work/qa-publish/frontend/tests",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "$QA_WORKSPACE/work/qa-publish/qa/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "$QA_WORKSPACE/work/qa-publish/frontend/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "acceptance-clarity.spec.cjs"
+        ],
+        "timeout": 45000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "acceptance-clarity.spec.cjs",
+      "file": "acceptance-clarity.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "latest: exact matches retain API text and visible source evidence on mobile and desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:59:06.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "783e9ad88f67d3534843-1e92c7a730bcbbdb3722",
+          "file": "acceptance-clarity.spec.cjs",
+          "line": 55,
+          "column": 1
+        },
+        {
+          "title": "latest: one alternative group deduplicates identical changes and requires explicit search",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3126,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:59:09.723Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "783e9ad88f67d3534843-69cadae02220ef4f8a82",
+          "file": "acceptance-clarity.spec.cjs",
+          "line": 78,
+          "column": 1
+        },
+        {
+          "title": "latest: rare and absent results have explicit outcomes and visible data notices",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1767,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:59:12.859Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "783e9ad88f67d3534843-d7ed08e4da765d175a0b",
+          "file": "acceptance-clarity.spec.cjs",
+          "line": 122,
+          "column": 1
+        },
+        {
+          "title": "latest: frontend displays the source quote and explanation returned by the API",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 45000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 997,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:59:14.637Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "783e9ad88f67d3534843-ed3802d85aa6eadaf8d3",
+          "file": "acceptance-clarity.spec.cjs",
+          "line": 149,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-23T11:59:06.099Z",
+    "duration": 9614.143,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

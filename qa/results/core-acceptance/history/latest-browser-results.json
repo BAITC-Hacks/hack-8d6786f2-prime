@@ -1,0 +1,295 @@
+{
+  "config": {
+    "argv": [
+      "/usr/bin/node",
+      "$QA_WORKSPACE/work/task3/retest-146b974/frontend/node_modules/@playwright/test/cli.js",
+      "test",
+      "--config",
+      "$QA_WORKSPACE/work/task3/retest-146b974/qa/playwright.config.cjs",
+      "--config",
+      "$QA_WORKSPACE/work/task3/latest-browser.config.cjs"
+    ],
+    "configFile": "$QA_WORKSPACE/work/task3/latest-browser.config.cjs",
+    "rootDir": "$QA_WORKSPACE/work/task3",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "$QA_WORKSPACE/work/task3/latest-browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "$QA_WORKSPACE/work/task3",
+        "testIgnore": [],
+        "testMatch": [
+          "/retest-146b974\\/frontend\\/tests\\/backend\\.spec\\.ts$/",
+          "/latest-browser\\.spec\\.cjs$/"
+        ],
+        "timeout": 10000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "$QA_WORKSPACE/work/task3/latest-browser-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.63.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "latest-browser.spec.cjs",
+      "file": "latest-browser.spec.cjs",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "latest: exact matches retain API text and visible source evidence on mobile and desktop",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2649,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:38:41.383Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bee08810c8f1353a31f2-347b4a37e52d32cbd1b1",
+          "file": "latest-browser.spec.cjs",
+          "line": 31,
+          "column": 1
+        },
+        {
+          "title": "latest: one alternative group deduplicates identical changes and requires explicit search",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2774,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:38:44.148Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bee08810c8f1353a31f2-7099bf77f856cecee62f",
+          "file": "latest-browser.spec.cjs",
+          "line": 46,
+          "column": 1
+        },
+        {
+          "title": "latest: rare and absent results have explicit outcomes and visible data notices",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1613,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:38:46.931Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bee08810c8f1353a31f2-befba8cd8194ddc6d84e",
+          "file": "latest-browser.spec.cjs",
+          "line": 75,
+          "column": 1
+        },
+        {
+          "title": "latest: frontend displays the original incomplete quote without concealing the backend issue",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 901,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:38:48.556Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bee08810c8f1353a31f2-47db9e673eae953cda8b",
+          "file": "latest-browser.spec.cjs",
+          "line": 90,
+          "column": 1
+        }
+      ]
+    },
+    {
+      "title": "retest-146b974/frontend/tests/backend.spec.ts",
+      "file": "retest-146b974/frontend/tests/backend.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "real API options, ranked matches, fallback, desktop and mobile",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 10000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 10105,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 10000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "$QA_WORKSPACE/work/task3/retest-146b974/frontend/tests/backend.spec.ts",
+                        "column": 56,
+                        "line": 27
+                      },
+                      "message": "Error: locator.selectOption: Test timeout of 10000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByLabel('Кого ищем?', { exact: true })\u001b[22m\n\n\n  25 |     .getByLabel('Тип мероприятия', { exact: true })\n  26 |     .selectOption(overrides.event ?? 'корпоратив')\n> 27 |   await page.getByLabel('Кого ищем?', { exact: true }).selectOption(overrides.category ?? 'Ведущий')\n     |                                                        ^\n  28 |   await page.getByLabel('Бюджет до', { exact: true }).fill(overrides.budget ?? '1500000')\n  29 |   await page.getByLabel('Язык', { exact: true }).selectOption(overrides.language ?? 'русский')\n  30 |   await page.getByLabel('Длительность, ч', { exact: true }).fill(overrides.duration ?? '6')\n    at fillRealForm ($QA_WORKSPACE/work/task3/retest-146b974/frontend/tests/backend.spec.ts:27:56)\n    at $QA_WORKSPACE/work/task3/retest-146b974/frontend/tests/backend.spec.ts:48:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-09-23T11:38:49.519Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "$QA_WORKSPACE/work/task3/latest-browser-artifacts/retest-146b974-frontend-te-9279f-fallback-desktop-and-mobile/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "$QA_WORKSPACE/work/task3/latest-browser-artifacts/retest-146b974-frontend-te-9279f-fallback-desktop-and-mobile/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6ddf63c3be071821ffde-fd8988a32db4f6099c8d",
+          "file": "retest-146b974/frontend/tests/backend.spec.ts",
+          "line": 41,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-09-23T11:38:40.632Z",
+    "duration": 19148.257,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

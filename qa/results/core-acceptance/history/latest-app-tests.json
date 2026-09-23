@@ -1,0 +1,235 @@
+{
+  "numTotalTestSuites": 3,
+  "numPassedTestSuites": 3,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 15,
+  "numPassedTests": 15,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790163438659,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle prevents duplicate submissions and ignores stale results even if transport ignores abort",
+          "status": "passed",
+          "title": "prevents duplicate submissions and ignores stale results even if transport ignores abort",
+          "duration": 463.5239979999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle applies suggestions visibly, keeps nulls and does not silently submit",
+          "status": "passed",
+          "title": "applies suggestions visibly, keeps nulls and does not silently submit",
+          "duration": 216.64247300000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle clears stale cards on edits and displays a field-specific API error",
+          "status": "passed",
+          "title": "clears stale cards on edits and displays a field-specific API error",
+          "duration": 231.9882709999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle shows alternatives separately with date suggestions and applies all changes without auto-search",
+          "status": "passed",
+          "title": "shows alternatives separately with date suggestions and applies all changes without auto-search",
+          "duration": 261.27930400000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle announces loading, focuses a network failure and lets the user retry",
+          "status": "passed",
+          "title": "announces loading, focuses a network failure and lets the user retry",
+          "duration": 280.3840170000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "request lifecycle"
+          ],
+          "fullName": "request lifecycle focuses the first invalid field in visual order and never sends an invalid query",
+          "status": "passed",
+          "title": "focuses the first invalid field in visual order and never sends an invalid query",
+          "duration": 82.06620499999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation gives matched its own visible outcome and preserves the server summary",
+          "status": "passed",
+          "title": "gives matched its own visible outcome and preserves the server summary",
+          "duration": 175.92068299999983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation gives no_category its own visible outcome and preserves the server summary",
+          "status": "passed",
+          "title": "gives no_category its own visible outcome and preserves the server summary",
+          "duration": 126.98232300000018,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation gives no_match its own visible outcome and preserves the server summary",
+          "status": "passed",
+          "title": "gives no_match its own visible outcome and preserves the server summary",
+          "duration": 111.17347099999961,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation keeps the reason for fewer than three cards: one",
+          "status": "passed",
+          "title": "keeps the reason for fewer than three cards: one",
+          "duration": 98.68313199999966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation keeps the reason for fewer than three cards: two",
+          "status": "passed",
+          "title": "keeps the reason for fewer than three cards: two",
+          "duration": 137.63085300000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation keeps repeated and unfinished server text intact and shows source evidence without inventing a replacement",
+          "status": "passed",
+          "title": "keeps repeated and unfinished server text intact and shows source evidence without inventing a replacement",
+          "duration": 162.60660000000007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation shows fallback, synthetic, prepared data, starting prices and inapplicable duration without expanding details",
+          "status": "passed",
+          "title": "shows fallback, synthetic, prepared data, starting prices and inapplicable duration without expanding details",
+          "duration": 169.87800700000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation combines suggestions and alternatives, removes only identical changes, and keeps a distinct date-only suggestion",
+          "status": "passed",
+          "title": "combines suggestions and alternatives, removes only identical changes, and keeps a distinct date-only suggestion",
+          "duration": 142.66365400000086,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        },
+        {
+          "ancestorTitles": [
+            "honest recommendation presentation"
+          ],
+          "fullName": "honest recommendation presentation does not render an empty alternatives section",
+          "status": "passed",
+          "title": "does not render an empty alternatives section",
+          "duration": 98.9144499999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": [],
+          "benchmarks": []
+        }
+      ],
+      "startTime": 1790163440371,
+      "endTime": 1790163443132.9146,
+      "status": "passed",
+      "message": "",
+      "name": "$QA_WORKSPACE/work/task3/retest-146b974/frontend/src/App.test.tsx"
+    }
+  ]
+}

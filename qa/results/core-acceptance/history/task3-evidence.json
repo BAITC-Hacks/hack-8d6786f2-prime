@@ -1,0 +1,2526 @@
+{
+  "checked_at_utc": "2026-09-23T11:31:47.011197+00:00",
+  "source_commit": "b68da2d8d8e96c7d39a3ce97c7cd6c6a669a1c9c",
+  "source_tz_url": "https://docs.google.com/document/d/1rhR2HFY164BrnkIP39N3usY9fNY4JeAgkPxEzbqL00w/edit",
+  "tz_text_sha256": "38f360044aa44d1f0871baf53b5937c48391dd51d01a632d38c4e8115515bc9e",
+  "new_tests": {
+    "tests": 9,
+    "passed": 6,
+    "failed": 3,
+    "skipped": 0,
+    "errors": 0,
+    "cases": [
+      {
+        "name": "test_december_calendar_date_only_changes_availability[person-december-start]",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_december_calendar_date_only_changes_availability[person-december-end]",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_december_calendar_date_only_changes_availability[venue-banquet-year-end]",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_december_calendar_date_only_changes_availability[venue-hotel-year-end]",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_december_calendar_date_only_changes_availability[florist-null-hours]",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_last_calendar_day_never_suggests_unknown_january",
+        "status": "PASS",
+        "failure": null
+      },
+      {
+        "name": "test_explanations_remain_distinguishable_after_names_are_removed[2026-09-23]",
+        "status": "FAIL",
+        "failure": "AssertionError: OPEN QA-Q01: explanations become identical after names are removed\nassert 'В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат меропри...1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога.' != 'В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат меропри...1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога.'"
+      },
+      {
+        "name": "test_explanations_remain_distinguishable_after_names_are_removed[2026-12-25]",
+        "status": "FAIL",
+        "failure": "AssertionError: OPEN QA-Q01: explanations become identical after names are removed\nassert 'В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат меропри...1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 25.12.2026 свободен по календарю каталога.' != 'В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат меропри...1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 25.12.2026 свободен по календарю каталога.'"
+      },
+      {
+        "name": "test_quote_does_not_stop_in_the_middle_of_the_source_clause",
+        "status": "FAIL",
+        "failure": "AssertionError: OPEN QA-Q02: selected text stops before the clause ends: нно, изучаем пару, гостей и делаем все, чтобы этот\nassert (not 'день запомнился всем на всю жизнь.' or 'д' in '.!?;:')"
+      }
+    ]
+  },
+  "requests": [
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-07",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-07",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 10; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 9; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 9,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [
+          {
+            "label": "Проверить 08.12.2026",
+            "changes": {
+              "date": "2026-12-08"
+            }
+          }
+        ],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-88430",
+              "name": "Куррапика",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 500000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-08",
+              "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+              "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 08.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "500000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-08"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-08"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "07.12.2026",
+                "proposed": "08.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-77838",
+              "name": "Хаул",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 1000000,
+              "languages": [
+                "казахский",
+                "русский"
+              ],
+              "max_hours": 8.0,
+              "available_on": "2026-12-07",
+              "description": "Профессиональный ведущий с интеллигентной, располагающей и ненавязчивой подачей. Его стиль — культурная импровизация, тонкий юмор и естественная энергия, которые делают атмосферу праздника живой, изысканной и запоминающейся. Он — актёр театра и кино, педагог по актёрскому мастерству театральной академии искусств, солист этно-рок группы «Тенгри Rock» и телеведущий телеканала «Hoshizora TV». Такой опыт позволяет ему работать глубже, тоньше и создавать праздник, в котором каждый момент звучит правильно. Для него каждое событие — не просто банкет, а самый важный день клиента. Ответственность, забота и уважение — основа его работы. Язык проведения: казахский",
+              "explanation": "В описании профиля: «Его стиль — культурная импровизация, тонкий юмор и естественная энергия, которые делают атмосферу праздника живой, изысканной и запоминающейся». От 1 000 000 ₸ при бюджете 1 000 000 ₸; может работать до 8 ч при запросе 6 ч; на 07.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Его стиль — культурная импровизация, тонкий юмор и естественная энергия, которые делают атмосферу праздника живой, изысканной и запоминающейся"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "1000000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-07"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "8"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "budget_kzt": 1000000
+            },
+            "differences": [
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "1 000 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-29829",
+              "name": "Аня Форджер",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 700000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-06",
+              "description": "Без долгих речей и наставлений на ивентах. Только развлечения и танцы. Интересен любой публике — как взрослым, так и молодежи. Аня также обаятельна в жизни, как и на сцене. Она — ответственная, исполнительная и креативная.",
+              "explanation": "В описании профиля: «Только развлечения и танцы». От 700 000 ₸ при бюджете 700 000 ₸; может работать до 6 ч при запросе 6 ч; на 06.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Только развлечения и танцы"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "700000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-06"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-06",
+              "budget_kzt": 700000
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "07.12.2026",
+                "proposed": "06.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              },
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "700 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 9.558,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-08",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-08",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-88430",
+            "name": "Куррапика",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 500000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-08",
+            "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+            "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 08.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "500000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-08"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "6"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. Из 10 профилей этой категории 9 не проходят условия. Причины исключения: заняты на выбранную дату — 6; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 6,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 6
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 8.38,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-30",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-30",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 10; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 8; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 8,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 8
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-88430",
+              "name": "Куррапика",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 500000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-29",
+              "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+              "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 29.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "500000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-29"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-29"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "30.12.2026",
+                "proposed": "29.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-44923",
+              "name": "Мицури Канроджи",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 650000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 8.0,
+              "available_on": "2026-12-30",
+              "description": "Приветствую всех, дорогие друзья! Меня зовут Мицури Канроджи – я профессиональный ведущий и сценарист. Обращаясь ко мне, вы можете не сомневаться, мы учтём все ваши пожелания. Вместе с вами мы разработаем ОРИГИНАЛЬНЫЙ сценарий, согласуем все нюансы и сделаем для вас настоящий праздник! именно таким каким вы его видите! Что вас ждёт: • Разработанный ТОЛЬКО для Вас сценарий • Импровизация, живой интеллигентный юмор • Современные интерактивы, креативные идеи • Динамичный праздник без шаблонов и банальностей • DJ и современная танцевальная музыка и мультимедийное оборудование •Связь со мной 247, помощь и поддержка Для Вашего комфорта заключаем договор Более подробную информацию вы можете узнать, связавшись со мной по телефону. С Уважением, Мицури Канроджи",
+              "explanation": "В описании профиля: «Импровизация, живой интеллигентный юмор». От 650 000 ₸ при бюджете 650 000 ₸; может работать до 8 ч при запросе 6 ч; на 30.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Импровизация, живой интеллигентный юмор"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "650000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-30"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "8"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "budget_kzt": 650000
+            },
+            "differences": [
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "650 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-44733",
+              "name": "Буллма",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 1000000,
+              "languages": [
+                "английский",
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-30",
+              "description": "Ведущий мероприятий с опытом работы более 10 лет. Стиль ведения интеллигентный, не напряжный, атмосферный. Веду как ламповые вечера от 8 человек, так и крупные бизнес форумы на 3000 человек. Всегда стараюсь наполнить вечер чем-то особенным, эксклюзивным. Языки ведения: Русский, Английский Крупные проекты, в которых был ведущим:Sakura Fondo Championship (Международная велогонка), Aoi Mix Event Almaty (международный конкурс по перманентному макияжу), NEXT MBA (3000 чел), Halloween и Новый год и Юбилей компании RideKaze(1000+ человек), Выпускной ReDawn 2.0 (Наруто Удзумаки, Тандзиро Камадо, Гон Фрикс), DemonWing jump&freez, DemonWing king of the rock, DemonWing Neymar’s five, Ryo Finance Day (400+ человек), TechnoLeaf partners day, Hoshi workshop Antalya, Hoshi workshop Sharm el sheikh, Наурыз в Маями (Флорида) 600+ человек",
+              "explanation": "В описании профиля: «Веду как ламповые вечера от 8 человек, так и крупные бизнес форумы на 3000 человек». От 1 000 000 ₸ при бюджете 1 000 000 ₸; может работать до 6 ч при запросе 6 ч; на 30.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Веду как ламповые вечера от 8 человек, так и крупные бизнес форумы на 3000 человек"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "1000000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-30"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "budget_kzt": 1000000
+            },
+            "differences": [
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "1 000 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 10.178,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-29",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-29",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-88430",
+            "name": "Куррапика",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 500000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-29",
+            "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+            "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 29.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "500000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-29"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "6"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. Из 10 профилей этой категории 9 не проходят условия. Причины исключения: заняты на выбранную дату — 6; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 6,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 6
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 8.705,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-30",
+        "event_type": "конференция",
+        "category": "Банкетный зал",
+        "budget_kzt": 2800000,
+        "duration_hours": 10,
+        "language": "английский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-30",
+          "event_type": "конференция",
+          "category": "Банкетный зал",
+          "budget_kzt": 2800000,
+          "duration_hours": 10.0,
+          "language": "английский"
+        },
+        "total_in_category": 1,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 1; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 1.",
+        "rejections": {
+          "busy": 1,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [
+          {
+            "label": "Проверить 31.12.2026",
+            "changes": {
+              "date": "2026-12-31"
+            }
+          }
+        ],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-90012",
+              "name": "Веджита",
+              "categories": [
+                "Банкетный зал",
+                "Отель"
+              ],
+              "city": "Астана",
+              "price_from_kzt": 2800000,
+              "languages": [
+                "английский",
+                "русский"
+              ],
+              "max_hours": 10.0,
+              "available_on": "2026-12-31",
+              "description": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости. Подходит для корпоративных конференций, свадеб и юбилеев, есть техническое оснащение для презентаций.",
+              "explanation": "В описании профиля: «Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости». От 2 800 000 ₸ (значение подготовлено для датасета) при бюджете 2 800 000 ₸; может работать до 10 ч при запросе 10 ч; на 31.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "2800000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "конференция"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-31"
+                },
+                {
+                  "field": "languages",
+                  "value": "английский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "10"
+                }
+              ],
+              "synthetic": true,
+              "price_imputed": true,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-31"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "30.12.2026",
+                "proposed": "31.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 9.067,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-31",
+        "event_type": "конференция",
+        "category": "Банкетный зал",
+        "budget_kzt": 2800000,
+        "duration_hours": 10,
+        "language": "английский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-31",
+          "event_type": "конференция",
+          "category": "Банкетный зал",
+          "budget_kzt": 2800000,
+          "duration_hours": 10.0,
+          "language": "английский"
+        },
+        "total_in_category": 1,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-90012",
+            "name": "Веджита",
+            "categories": [
+              "Банкетный зал",
+              "Отель"
+            ],
+            "city": "Астана",
+            "price_from_kzt": 2800000,
+            "languages": [
+              "английский",
+              "русский"
+            ],
+            "max_hours": 10.0,
+            "available_on": "2026-12-31",
+            "description": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости. Подходит для корпоративных конференций, свадеб и юбилеев, есть техническое оснащение для презентаций.",
+            "explanation": "В описании профиля: «Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости». От 2 800 000 ₸ (значение подготовлено для датасета) при бюджете 2 800 000 ₸; может работать до 10 ч при запросе 10 ч; на 31.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "2800000"
+              },
+              {
+                "field": "event_formats",
+                "value": "конференция"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-31"
+              },
+              {
+                "field": "languages",
+                "value": "английский"
+              },
+              {
+                "field": "max_hours",
+                "value": "10"
+              }
+            ],
+            "synthetic": true,
+            "price_imputed": true,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. В этой категории в городе в каталоге всего 1 профилей.",
+        "rejections": {
+          "busy": 0,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 8.613,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-30",
+        "event_type": "конференция",
+        "category": "Отель",
+        "budget_kzt": 2800000,
+        "duration_hours": 10,
+        "language": "английский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-30",
+          "event_type": "конференция",
+          "category": "Отель",
+          "budget_kzt": 2800000,
+          "duration_hours": 10.0,
+          "language": "английский"
+        },
+        "total_in_category": 1,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 1; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 1.",
+        "rejections": {
+          "busy": 1,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [
+          {
+            "label": "Проверить 31.12.2026",
+            "changes": {
+              "date": "2026-12-31"
+            }
+          }
+        ],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 8
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-90012",
+              "name": "Веджита",
+              "categories": [
+                "Банкетный зал",
+                "Отель"
+              ],
+              "city": "Астана",
+              "price_from_kzt": 2800000,
+              "languages": [
+                "английский",
+                "русский"
+              ],
+              "max_hours": 10.0,
+              "available_on": "2026-12-31",
+              "description": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости. Подходит для корпоративных конференций, свадеб и юбилеев, есть техническое оснащение для презентаций.",
+              "explanation": "В описании профиля: «Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости». От 2 800 000 ₸ (значение подготовлено для датасета) при бюджете 2 800 000 ₸; может работать до 10 ч при запросе 10 ч; на 31.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "2800000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "конференция"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-31"
+                },
+                {
+                  "field": "languages",
+                  "value": "английский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "10"
+                }
+              ],
+              "synthetic": true,
+              "price_imputed": true,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-31"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "30.12.2026",
+                "proposed": "31.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 9.55,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-31",
+        "event_type": "конференция",
+        "category": "Отель",
+        "budget_kzt": 2800000,
+        "duration_hours": 10,
+        "language": "английский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-31",
+          "event_type": "конференция",
+          "category": "Отель",
+          "budget_kzt": 2800000,
+          "duration_hours": 10.0,
+          "language": "английский"
+        },
+        "total_in_category": 1,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-90012",
+            "name": "Веджита",
+            "categories": [
+              "Банкетный зал",
+              "Отель"
+            ],
+            "city": "Астана",
+            "price_from_kzt": 2800000,
+            "languages": [
+              "английский",
+              "русский"
+            ],
+            "max_hours": 10.0,
+            "available_on": "2026-12-31",
+            "description": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости. Подходит для корпоративных конференций, свадеб и юбилеев, есть техническое оснащение для презентаций.",
+            "explanation": "В описании профиля: «Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости». От 2 800 000 ₸ (значение подготовлено для датасета) при бюджете 2 800 000 ₸; может работать до 10 ч при запросе 10 ч; на 31.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Skyline Crown Hotel – отель делового класса с двумя банкетными залами разной вместимости"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "2800000"
+              },
+              {
+                "field": "event_formats",
+                "value": "конференция"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-31"
+              },
+              {
+                "field": "languages",
+                "value": "английский"
+              },
+              {
+                "field": "max_hours",
+                "value": "10"
+              }
+            ],
+            "synthetic": true,
+            "price_imputed": true,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. В этой категории в городе в каталоге всего 1 профилей.",
+        "rejections": {
+          "busy": 0,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 9.279,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-30",
+        "event_type": "свадьба",
+        "category": "Флорист",
+        "budget_kzt": 300000,
+        "duration_hours": 100,
+        "language": null
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-30",
+          "event_type": "свадьба",
+          "category": "Флорист",
+          "budget_kzt": 300000,
+          "duration_hours": 100.0,
+          "language": null
+        },
+        "total_in_category": 1,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 1; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 1.",
+        "rejections": {
+          "busy": 1,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-90002",
+              "name": "Хаку",
+              "categories": [
+                "Флорист"
+              ],
+              "city": "Астана",
+              "price_from_kzt": 300000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": null,
+              "available_on": "2026-12-29",
+              "description": "Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны. Предлагаем композиции в разных стилях, от минимализма до пышного декора.",
+              "explanation": "В описании профиля: «Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны». От 300 000 ₸ при бюджете 300 000 ₸; формат «свадьба» указан в профиле; на 29.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "300000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "свадьба"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-29"
+                }
+              ],
+              "synthetic": true,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-29"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "30.12.2026",
+                "proposed": "29.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 9.758,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Астана",
+        "date": "2026-12-29",
+        "event_type": "свадьба",
+        "category": "Флорист",
+        "budget_kzt": 300000,
+        "duration_hours": 100,
+        "language": null
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Астана",
+          "date": "2026-12-29",
+          "event_type": "свадьба",
+          "category": "Флорист",
+          "budget_kzt": 300000,
+          "duration_hours": 100.0,
+          "language": null
+        },
+        "total_in_category": 1,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-90002",
+            "name": "Хаку",
+            "categories": [
+              "Флорист"
+            ],
+            "city": "Астана",
+            "price_from_kzt": 300000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": null,
+            "available_on": "2026-12-29",
+            "description": "Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны. Предлагаем композиции в разных стилях, от минимализма до пышного декора.",
+            "explanation": "В описании профиля: «Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны». От 300 000 ₸ при бюджете 300 000 ₸; формат «свадьба» указан в профиле; на 29.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Ирис Botanica — флористическое оформление корпоративных и частных событий: welcome-зоны, президиумы, фотозоны"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "300000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-29"
+              }
+            ],
+            "synthetic": true,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. В этой категории в городе в каталоге всего 1 профилей.",
+        "rejections": {
+          "busy": 0,
+          "budget": 0,
+          "event_type": 0,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 9.29,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-31",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "no_match",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-31",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 0,
+        "cards": [],
+        "summary": "В этой категории в городе профилей: 10; ни один не проходит все условия. Причины исключения: заняты на выбранную дату — 7; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 7,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": [
+          {
+            "card": {
+              "id": "HK-88430",
+              "name": "Куррапика",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 500000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-29",
+              "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+              "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 29.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "500000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-29"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "date": "2026-12-29"
+            },
+            "differences": [
+              {
+                "field": "date",
+                "requested": "31.12.2026",
+                "proposed": "29.12.2026",
+                "reason": "На исходную дату подрядчик занят"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-44923",
+              "name": "Мицури Канроджи",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 650000,
+              "languages": [
+                "русский"
+              ],
+              "max_hours": 8.0,
+              "available_on": "2026-12-31",
+              "description": "Приветствую всех, дорогие друзья! Меня зовут Мицури Канроджи – я профессиональный ведущий и сценарист. Обращаясь ко мне, вы можете не сомневаться, мы учтём все ваши пожелания. Вместе с вами мы разработаем ОРИГИНАЛЬНЫЙ сценарий, согласуем все нюансы и сделаем для вас настоящий праздник! именно таким каким вы его видите! Что вас ждёт: • Разработанный ТОЛЬКО для Вас сценарий • Импровизация, живой интеллигентный юмор • Современные интерактивы, креативные идеи • Динамичный праздник без шаблонов и банальностей • DJ и современная танцевальная музыка и мультимедийное оборудование •Связь со мной 247, помощь и поддержка Для Вашего комфорта заключаем договор Более подробную информацию вы можете узнать, связавшись со мной по телефону. С Уважением, Мицури Канроджи",
+              "explanation": "В описании профиля: «Импровизация, живой интеллигентный юмор». От 650 000 ₸ при бюджете 650 000 ₸; может работать до 8 ч при запросе 6 ч; на 31.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Импровизация, живой интеллигентный юмор"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "650000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-31"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "8"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "budget_kzt": 650000
+            },
+            "differences": [
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "650 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          },
+          {
+            "card": {
+              "id": "HK-75012",
+              "name": "Джинбей",
+              "categories": [
+                "Ведущий"
+              ],
+              "city": "Алматы",
+              "price_from_kzt": 1300000,
+              "languages": [
+                "английский",
+                "русский"
+              ],
+              "max_hours": 6.0,
+              "available_on": "2026-12-31",
+              "description": "Джинбей — ведущий нового поколения, который соединяет опыт 10 лет в индустрии, медийность и безупречное чувство аудитории. Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события. Амбассадор Digital Sakura Almaty, участник медиапрограмм Formula 1, партнёр глобальных компаний — от PearTech до GateCard. Джинбей создаёт атмосферу, задаёт тон событию и удерживает внимание так, чтобы каждый момент стал значимым. Стиль, энергия и профессионализм — три качества, которые делают его одним из самых востребованных ведущих страны.",
+              "explanation": "В описании профиля: «Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события». От 1 300 000 ₸ при бюджете 1 300 000 ₸; может работать до 6 ч при запросе 6 ч; на 31.12.2026 свободен по календарю каталога.",
+              "evidence": [
+                {
+                  "field": "description",
+                  "value": "Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события"
+                },
+                {
+                  "field": "price_from_kzt",
+                  "value": "1300000"
+                },
+                {
+                  "field": "event_formats",
+                  "value": "корпоратив"
+                },
+                {
+                  "field": "available_on",
+                  "value": "2026-12-31"
+                },
+                {
+                  "field": "languages",
+                  "value": "русский"
+                },
+                {
+                  "field": "max_hours",
+                  "value": "6"
+                }
+              ],
+              "synthetic": false,
+              "price_imputed": false,
+              "city_imputed": false
+            },
+            "changes": {
+              "budget_kzt": 1300000
+            },
+            "differences": [
+              {
+                "field": "budget_kzt",
+                "requested": "500 000 ₸",
+                "proposed": "1 300 000 ₸",
+                "reason": "Стартовая цена выше исходного бюджета"
+              }
+            ],
+            "explanation_mode": "fallback"
+          }
+        ]
+      },
+      "elapsed_ms": 9.326,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-29",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-29",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 500000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-88430",
+            "name": "Куррапика",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 500000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-29",
+            "description": "Я, Куррапика — профессиональный ведущий мероприятий с современным подходом и тонким чувством аудитории. Обладаю харизмой, грамотной речью и умею создавать живую, динамичную атмосферу на любом событии. Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч. Уверенно удерживаю внимание гостей, чувствую настроение зала и легко адаптируюсь под формат и уровень события. Мой стиль — это сочетание интеллигентного юмора, четкой организации и высокого уровня ответственности. Мне доверяют проведение самых важных и значимых мероприятий.",
+            "explanation": "В описании профиля: «Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч». От 500 000 ₸ при бюджете 500 000 ₸; может работать до 6 ч при запросе 6 ч; на 29.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Специализируюсь на проведении корпоративных мероприятий, торжеств и деловых встреч"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "500000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-29"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "6"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. Из 10 профилей этой категории 9 не проходят условия. Причины исключения: заняты на выбранную дату — 6; стартовая цена выше бюджета — 9; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 6,
+          "budget": 9,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 6
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 8.188,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-31",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 650000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-31",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 650000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 1,
+        "cards": [
+          {
+            "id": "HK-44923",
+            "name": "Мицури Канроджи",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 650000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": 8.0,
+            "available_on": "2026-12-31",
+            "description": "Приветствую всех, дорогие друзья! Меня зовут Мицури Канроджи – я профессиональный ведущий и сценарист. Обращаясь ко мне, вы можете не сомневаться, мы учтём все ваши пожелания. Вместе с вами мы разработаем ОРИГИНАЛЬНЫЙ сценарий, согласуем все нюансы и сделаем для вас настоящий праздник! именно таким каким вы его видите! Что вас ждёт: • Разработанный ТОЛЬКО для Вас сценарий • Импровизация, живой интеллигентный юмор • Современные интерактивы, креативные идеи • Динамичный праздник без шаблонов и банальностей • DJ и современная танцевальная музыка и мультимедийное оборудование •Связь со мной 247, помощь и поддержка Для Вашего комфорта заключаем договор Более подробную информацию вы можете узнать, связавшись со мной по телефону. С Уважением, Мицури Канроджи",
+            "explanation": "В описании профиля: «Импровизация, живой интеллигентный юмор». От 650 000 ₸ при бюджете 650 000 ₸; может работать до 8 ч при запросе 6 ч; на 31.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Импровизация, живой интеллигентный юмор"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "650000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-31"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "8"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 1. Показываем все. Из 10 профилей этой категории 9 не проходят условия. Причины исключения: заняты на выбранную дату — 7; стартовая цена выше бюджета — 8; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 7,
+          "budget": 8,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 8.818,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-31",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1300000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-31",
+          "event_type": "корпоратив",
+          "category": "Ведущий",
+          "budget_kzt": 1300000,
+          "duration_hours": 6.0,
+          "language": "русский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 2,
+        "cards": [
+          {
+            "id": "HK-44923",
+            "name": "Мицури Канроджи",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 650000,
+            "languages": [
+              "русский"
+            ],
+            "max_hours": 8.0,
+            "available_on": "2026-12-31",
+            "description": "Приветствую всех, дорогие друзья! Меня зовут Мицури Канроджи – я профессиональный ведущий и сценарист. Обращаясь ко мне, вы можете не сомневаться, мы учтём все ваши пожелания. Вместе с вами мы разработаем ОРИГИНАЛЬНЫЙ сценарий, согласуем все нюансы и сделаем для вас настоящий праздник! именно таким каким вы его видите! Что вас ждёт: • Разработанный ТОЛЬКО для Вас сценарий • Импровизация, живой интеллигентный юмор • Современные интерактивы, креативные идеи • Динамичный праздник без шаблонов и банальностей • DJ и современная танцевальная музыка и мультимедийное оборудование •Связь со мной 247, помощь и поддержка Для Вашего комфорта заключаем договор Более подробную информацию вы можете узнать, связавшись со мной по телефону. С Уважением, Мицури Канроджи",
+            "explanation": "В описании профиля: «Импровизация, живой интеллигентный юмор». От 650 000 ₸ при бюджете 1 300 000 ₸; может работать до 8 ч при запросе 6 ч; на 31.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Импровизация, живой интеллигентный юмор"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "650000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-31"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "8"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          },
+          {
+            "id": "HK-75012",
+            "name": "Джинбей",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1300000,
+            "languages": [
+              "английский",
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-31",
+            "description": "Джинбей — ведущий нового поколения, который соединяет опыт 10 лет в индустрии, медийность и безупречное чувство аудитории. Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события. Амбассадор Digital Sakura Almaty, участник медиапрограмм Formula 1, партнёр глобальных компаний — от PearTech до GateCard. Джинбей создаёт атмосферу, задаёт тон событию и удерживает внимание так, чтобы каждый момент стал значимым. Стиль, энергия и профессионализм — три качества, которые делают его одним из самых востребованных ведущих страны.",
+            "explanation": "В описании профиля: «Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события». От 1 300 000 ₸ при бюджете 1 300 000 ₸; может работать до 6 ч при запросе 6 ч; на 31.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Он работает с крупнейшими брендами и международными площадками, ведёт мероприятия Fortune Sekai, технологические форумы, концерты и премиальные частные события"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1300000"
+              },
+              {
+                "field": "event_formats",
+                "value": "корпоратив"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-31"
+              },
+              {
+                "field": "languages",
+                "value": "русский"
+              },
+              {
+                "field": "max_hours",
+                "value": "6"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 2. Показываем все. Из 10 профилей этой категории 8 не проходят условия. Причины исключения: заняты на выбранную дату — 7; стартовая цена выше бюджета — 1; не указан выбранный формат — 1. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 7,
+          "budget": 1,
+          "event_type": 1,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 9.92,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Лайв-бэнд",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-09-23",
+          "event_type": "свадьба",
+          "category": "Лайв-бэнд",
+          "budget_kzt": 10000000,
+          "duration_hours": null,
+          "language": null
+        },
+        "total_in_category": 5,
+        "eligible_count": 3,
+        "cards": [
+          {
+            "id": "HK-23752",
+            "name": "Дзэнъицу Агацума",
+            "categories": [
+              "Лайв-бэнд"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1150000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-09-23",
+            "description": "В репертуаре группы большой выбор казахских песен, ретро-шлягеров, хитов 80-х, 90-х, 2000-х, а так же, современные хиты. Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия! Наши музыканты профессионалы своего дела. Их любовь к музыке передаётся каждой ноте. «Thunder Breath Band» band – это парад незабываемых впечатлений и отличного настроения. Расширенный состав Thunder Breath Band: 🎤 два вокалиста 🎤 вокалистка 🥁 барабанщик 🎸 бас-гитарист 🎸 соло-гитарист 🎺 труба 🎷 саксофон 🎵 тромбон Репертуар включает ретро-хиты, треки из нулевых, современные композиции и казахскую музыку. Такой состав даёт плотный живой звук, который наполняет пространство и создаёт атмосферу настоящего выступления.",
+            "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1150000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-09-23"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          },
+          {
+            "id": "HK-83709",
+            "name": "Рей Аянами",
+            "categories": [
+              "Лайв-бэнд"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1150000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-09-23",
+            "description": "В репертуаре группы большой выбор казахских песен, ретро-шлягеров, хитов 80-х, 90-х, 2000-х, а так же, современные хиты. Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия! Наши музыканты профессионалы своего дела. Их любовь к музыке передаётся каждой ноте. «Eva Sound» band – это парад незабываемых впечатлений и отличного настроения. Большой музыкальный состав: 4 вокалиста, струнный квартет, духовой брасс, перкуссионист, клавишник, барабанщик, гитарист и бас-гитарист.",
+            "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1150000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-09-23"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          },
+          {
+            "id": "HK-57480",
+            "name": "Кобаяши",
+            "categories": [
+              "Лайв-бэнд"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1500000,
+            "languages": [
+              "английский",
+              "русский"
+            ],
+            "max_hours": 5.0,
+            "available_on": "2026-09-23",
+            "description": "KOBAYASHI SHOW BAND — это синергия живой музыки, эмоций и шоу. Профессиональный коллектив, который превращает каждое выступление в яркий перформанс с мощной энергетикой, хореографией и активным взаимодействием с публикой. Репертуар KOBAYASHI охватывает всё: от культовых хитов 90-х и 2000-х до современных композиций. Это не просто концерт — это шоу, где музыка оживает через движение, стиль и атмосферу.Команда постоянно развивается, экспериментирует с форматами и создаёт уникальные выступления, которые выделяют их среди других и делают событие по-настоящему запоминающимся.",
+            "explanation": "В описании профиля: «Репертуар KOBAYASHI охватывает всё: от культовых хитов 90-х и 2000-х до современных композиций». От 1 500 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Репертуар KOBAYASHI охватывает всё: от культовых хитов 90-х и 2000-х до современных композиций"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1500000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-09-23"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 3. Показываем 3 по правилам подбора.",
+        "rejections": {
+          "busy": 1,
+          "budget": 0,
+          "event_type": 2,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 8
+        },
+        "alternatives": []
+      },
+      "source": "previous-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-12-25",
+        "event_type": "свадьба",
+        "category": "Лайв-бэнд",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-12-25",
+          "event_type": "свадьба",
+          "category": "Лайв-бэнд",
+          "budget_kzt": 10000000,
+          "duration_hours": null,
+          "language": null
+        },
+        "total_in_category": 5,
+        "eligible_count": 2,
+        "cards": [
+          {
+            "id": "HK-23752",
+            "name": "Дзэнъицу Агацума",
+            "categories": [
+              "Лайв-бэнд"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1150000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-25",
+            "description": "В репертуаре группы большой выбор казахских песен, ретро-шлягеров, хитов 80-х, 90-х, 2000-х, а так же, современные хиты. Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия! Наши музыканты профессионалы своего дела. Их любовь к музыке передаётся каждой ноте. «Thunder Breath Band» band – это парад незабываемых впечатлений и отличного настроения. Расширенный состав Thunder Breath Band: 🎤 два вокалиста 🎤 вокалистка 🥁 барабанщик 🎸 бас-гитарист 🎸 соло-гитарист 🎺 труба 🎷 саксофон 🎵 тромбон Репертуар включает ретро-хиты, треки из нулевых, современные композиции и казахскую музыку. Такой состав даёт плотный живой звук, который наполняет пространство и создаёт атмосферу настоящего выступления.",
+            "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 25.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Начиная от модных ивэнтов до масштабных свадеб, «Thunder Breath Band» идеально впишется в любой формат мероприятия"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1150000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-25"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          },
+          {
+            "id": "HK-83709",
+            "name": "Рей Аянами",
+            "categories": [
+              "Лайв-бэнд"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1150000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 6.0,
+            "available_on": "2026-12-25",
+            "description": "В репертуаре группы большой выбор казахских песен, ретро-шлягеров, хитов 80-х, 90-х, 2000-х, а так же, современные хиты. Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия! Наши музыканты профессионалы своего дела. Их любовь к музыке передаётся каждой ноте. «Eva Sound» band – это парад незабываемых впечатлений и отличного настроения. Большой музыкальный состав: 4 вокалиста, струнный квартет, духовой брасс, перкуссионист, клавишник, барабанщик, гитарист и бас-гитарист.",
+            "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 25.12.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Начиная от модных ивэнтов до масштабных свадеб, «Eva Sound» идеально впишется в любой формат мероприятия"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1150000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-12-25"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 2. Показываем все. Из 5 профилей этой категории 3 не проходят условия. Причины исключения: заняты на выбранную дату — 3; не указан выбранный формат — 2. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 3,
+          "budget": 0,
+          "event_type": 2,
+          "language": 0,
+          "duration": 0
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 7
+        },
+        "alternatives": []
+      },
+      "elapsed_ms": 9.984,
+      "source": "new-real-HTTP"
+    },
+    {
+      "request": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Ведущий",
+        "budget_kzt": 10000000,
+        "duration_hours": 10,
+        "language": "казахский"
+      },
+      "http": 200,
+      "actual": {
+        "status": "matched",
+        "query": {
+          "city": "Алматы",
+          "date": "2026-09-23",
+          "event_type": "свадьба",
+          "category": "Ведущий",
+          "budget_kzt": 10000000,
+          "duration_hours": 10.0,
+          "language": "казахский"
+        },
+        "total_in_category": 10,
+        "eligible_count": 2,
+        "cards": [
+          {
+            "id": "HK-42352",
+            "name": "Эмилия",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 900000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 10.0,
+            "available_on": "2026-09-23",
+            "description": "Опыт ведения свадеб 13 лет Вел свадьбы в Алматы, Москве, Дубае, Бодруме, Ташкенте Статистика: 356 свадеб, 0 разводов К каждой свадьбе мы с командой подходим ответственно, изучаем пару, гостей и делаем все, чтобы этот день запомнился всем на всю жизнь.",
+            "explanation": "В описании профиля: «Опыт ведения свадеб 13 лет Вел свадьбы в Алматы, Москве, Дубае, Бодруме, Ташкенте Статистика: 356 свадеб, 0 разводов К каждой свадьбе мы с командой подходим ответственно, изучаем пару, гостей и делаем все, чтобы этот». От 900 000 ₸ (значение подготовлено для датасета) при бюджете 10 000 000 ₸; может работать до 10 ч при запросе 10 ч; на 23.09.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Опыт ведения свадеб 13 лет Вел свадьбы в Алматы, Москве, Дубае, Бодруме, Ташкенте Статистика: 356 свадеб, 0 разводов К каждой свадьбе мы с командой подходим ответственно, изучаем пару, гостей и делаем все, чтобы этот"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "900000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-09-23"
+              },
+              {
+                "field": "languages",
+                "value": "казахский"
+              },
+              {
+                "field": "max_hours",
+                "value": "10"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": true,
+            "city_imputed": false
+          },
+          {
+            "id": "HK-27222",
+            "name": "Сон Гоку",
+            "categories": [
+              "Ведущий"
+            ],
+            "city": "Алматы",
+            "price_from_kzt": 1000000,
+            "languages": [
+              "казахский",
+              "русский"
+            ],
+            "max_hours": 10.0,
+            "available_on": "2026-09-23",
+            "description": "Сон Гоку — один из самых востребованных двуязычных ведущих Алматы с опытом более 12 лет. Его стиль — европейская подача, тонкий юмор, уважение к традициям и умение создать атмосферу, в которой комфортно каждому гостю. Начав карьеру на телевидении, Гоку стал голосом крупнейших медиа Казахстана и постоянным ведущим масштабных событий. Его профессиональная история включает работу на телеканалах Aiyar TV, Nurdala TV, Otan TV, HitStar TV, SportSekai и радиостанциях Hikari FM, Yume FM. С Гоку сотрудничали Magna Market, Hikari Premium Al-Farabi, Kurichiken, MoonBucks, Sora Bank, Tsuki Bank, Ginkgo Group, MegaHoshi Mall, Merlin Ghibli DIY, Eureka Ghibli и другие бренды. Гоку — ведущий, который держит зал, уважает культуру и превращает событие в тёплую, лёгкую и динамичную историю.",
+            "explanation": "В описании профиля: «Его стиль — европейская подача, тонкий юмор, уважение к традициям и умение создать атмосферу, в которой комфортно каждому гостю». От 1 000 000 ₸ при бюджете 10 000 000 ₸; может работать до 10 ч при запросе 10 ч; на 23.09.2026 свободен по календарю каталога.",
+            "evidence": [
+              {
+                "field": "description",
+                "value": "Его стиль — европейская подача, тонкий юмор, уважение к традициям и умение создать атмосферу, в которой комфортно каждому гостю"
+              },
+              {
+                "field": "price_from_kzt",
+                "value": "1000000"
+              },
+              {
+                "field": "event_formats",
+                "value": "свадьба"
+              },
+              {
+                "field": "available_on",
+                "value": "2026-09-23"
+              },
+              {
+                "field": "languages",
+                "value": "казахский"
+              },
+              {
+                "field": "max_hours",
+                "value": "10"
+              }
+            ],
+            "synthetic": false,
+            "price_imputed": false,
+            "city_imputed": false
+          }
+        ],
+        "summary": "Подходит профилей: 2. Показываем все. Из 10 профилей этой категории 8 не проходят условия. Причины исключения: заняты на выбранную дату — 4; не указан выбранный формат — 4; не указан выбранный язык — 5; не подходит длительность — 7. У одного профиля может быть несколько причин.",
+        "rejections": {
+          "busy": 4,
+          "budget": 0,
+          "event_type": 4,
+          "language": 5,
+          "duration": 7
+        },
+        "suggestions": [],
+        "meta": {
+          "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+          "explanation_mode": "fallback",
+          "latency_ms": 8
+        },
+        "alternatives": []
+      },
+      "source": "previous-real-HTTP"
+    }
+  ],
+  "blind_review": {
+    "anonymized_pair": [
+      {
+        "id": "HK-23752",
+        "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога."
+      },
+      {
+        "id": "HK-83709",
+        "explanation": "В описании профиля: «Начиная от модных ивэнтов до масштабных свадеб, «[ИМЯ]» идеально впишется в любой формат мероприятия». От 1 150 000 ₸ при бюджете 10 000 000 ₸; формат «свадьба» указан в профиле; на 23.09.2026 свободен по календарю каталога."
+      }
+    ],
+    "same_explanation": true
+  },
+  "reused_test_results": {
+    "existing_backend_and_http": {
+      "passed": 71,
+      "failed": 0,
+      "skipped": 0
+    },
+    "adapted_independent_acceptance": {
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0
+    },
+    "mock_ai_safety": {
+      "passed": 35,
+      "failed": 0,
+      "skipped": 0
+    },
+    "frontend_unit": {
+      "passed": 22,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser_existing": {
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    "browser_extra_security": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "total": {
+      "passed": 202,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "relative_links": {
+    "commit": "b68da2d8d8e96c7d39a3ce97c7cd6c6a669a1c9c",
+    "markdown_files": 11,
+    "relative_links": [
+      {
+        "source": "README.md",
+        "line": 48,
+        "target": "docs/architecture.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 48,
+        "target": "contracts/api.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 75,
+        "target": "docs/distribution.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 79,
+        "target": "backend/README.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 79,
+        "target": "frontend/README.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 94,
+        "target": "docs/demo.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 94,
+        "target": "docs/requirements-audit.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 94,
+        "target": "docs/known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 120,
+        "target": "docs/known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "README.md",
+        "line": 126,
+        "target": "docs/distribution.md",
+        "exists": true
+      },
+      {
+        "source": "backend/README.md",
+        "line": 3,
+        "target": "../README.md",
+        "exists": true
+      },
+      {
+        "source": "backend/README.md",
+        "line": 27,
+        "target": "../contracts/api.md",
+        "exists": true
+      },
+      {
+        "source": "backend/README.md",
+        "line": 27,
+        "target": "../docs/architecture.md",
+        "exists": true
+      },
+      {
+        "source": "backend/README.md",
+        "line": 27,
+        "target": "../docs/known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "docs/architecture.md",
+        "line": 21,
+        "target": "known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "docs/demo.md",
+        "line": 20,
+        "target": "known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "docs/requirements-audit.md",
+        "line": 20,
+        "target": "demo.md",
+        "exists": true
+      },
+      {
+        "source": "docs/requirements-audit.md",
+        "line": 20,
+        "target": "known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "docs/requirements-audit.md",
+        "line": 20,
+        "target": "../qa/README.md",
+        "exists": true
+      },
+      {
+        "source": "docs/verification.md",
+        "line": 16,
+        "target": "known-issues.md",
+        "exists": true
+      },
+      {
+        "source": "frontend/README.md",
+        "line": 12,
+        "target": "../README.md",
+        "exists": true
+      },
+      {
+        "source": "frontend/README.md",
+        "line": 16,
+        "target": "../contracts/api.md",
+        "exists": true
+      },
+      {
+        "source": "qa/README.md",
+        "line": 11,
+        "target": "../docs/known-issues.md",
+        "exists": true
+      }
+    ],
+    "broken": []
+  },
+  "delivery": {
+    "repository": {
+      "default_branch": "main",
+      "homepage": null,
+      "private": true,
+      "visibility": "private"
+    },
+    "releases": [],
+    "deployments": [],
+    "github_source_archive": {
+      "source": "GitHub API zipball/b68da2d8d8e96c7d39a3ce97c7cd6c6a669a1c9c",
+      "files": 69,
+      "unexpected_generated_or_private_paths": [],
+      "mismatches_vs_tested_snapshot": [],
+      "has_readme": true,
+      "has_launcher": true,
+      "archive_sha256": "7bc581e05f6d7e4479f2e928bfeb278cb26cd2217adbbd2ddbedbbea26b37740"
+    },
+    "jury_access": "not_confirmed"
+  },
+  "clean_install": {
+    "prior_clean_snapshot_install": "passed",
+    "tested_python": "3.14.4",
+    "readme_python": "3.12",
+    "python312_available": false,
+    "exact_python312_readme_run": "not_run",
+    "os": "Ubuntu 26.04 LTS",
+    "node": "22.22.1",
+    "pnpm": "11.19.0"
+  },
+  "not_repeated": [
+    "202 existing successful tests",
+    "207 security probes",
+    "2750 load requests",
+    "651-query functional matrix",
+    "clean dependency installation/build on Python3.14",
+    "existing browser scenarios and restart tests"
+  ],
+  "git_actions": {
+    "branch_created": false,
+    "checkout": false,
+    "commit": false,
+    "push": false,
+    "application_modified": false
+  },
+  "latest_frontend_followup": {
+    "commit": "146b974b7c686c9f44a3488899b13ab8596f94f2",
+    "changes": {
+      "sha": "146b974b7c686c9f44a3488899b13ab8596f94f2",
+      "baseline": "b68da2d8d8e96c7d39a3ce97c7cd6c6a669a1c9c",
+      "changed": [
+        "frontend/src/App.test.tsx",
+        "frontend/src/App.tsx",
+        "frontend/src/styles.css"
+      ],
+      "backend_contract_data_dependencies_unchanged": true
+    },
+    "unit_tests": {
+      "passed": 15,
+      "failed": 0
+    },
+    "browser_tests": {
+      "new_passed": 4,
+      "existing_failed": 1,
+      "skipped": 0
+    },
+    "existing_test_failure": {
+      "file": "frontend/tests/backend.spec.ts",
+      "line": 27,
+      "cause": "Locator Кого ищем? is obsolete; current label is Категория",
+      "classification": "QA-T01 test maintenance; app interaction passed with current label"
+    },
+    "quality_issues": {
+      "QA-Q01": "OPEN: backend unchanged",
+      "QA-Q02": "OPEN: backend unchanged; actual incomplete text also displayed in new UI",
+      "QA-Q03": "OPEN: backend summary unchanged",
+      "QA-Q04": "CLOSED: unified alternatives verified with real API"
+    },
+    "source_integrity": {
+      "sha": "146b974b7c686c9f44a3488899b13ab8596f94f2",
+      "files": 69,
+      "mismatches_vs_tested_snapshot": [],
+      "generated_or_private_paths": []
+    },
+    "build": "PASS",
+    "reused_backend_evidence": true
+  }
+}

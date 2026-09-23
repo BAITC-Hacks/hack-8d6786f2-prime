@@ -1,0 +1,10 @@
+{
+  "sha": "146b974b7c686c9f44a3488899b13ab8596f94f2",
+  "baseline": "b68da2d8d8e96c7d39a3ce97c7cd6c6a669a1c9c",
+  "changed": [
+    "frontend/src/App.test.tsx",
+    "frontend/src/App.tsx",
+    "frontend/src/styles.css"
+  ],
+  "backend_contract_data_dependencies_unchanged": true
+}

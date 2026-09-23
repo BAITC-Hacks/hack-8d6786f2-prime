@@ -1,0 +1,39 @@
+{
+  "application_commit": "146b974b7c686c9f44a3488899b13ab8596f94f2",
+  "branch": "test/core-acceptance",
+  "purpose": "QA publication checkpoint before teammate backend fixes; not final acceptance",
+  "http": {
+    "passed": 6,
+    "failed": 3,
+    "skipped": 0,
+    "errors": 0,
+    "real_post_requests": 17,
+    "ai": "fallback; provider disabled",
+    "open_issues": [
+      "QA-Q01",
+      "QA-Q02"
+    ]
+  },
+  "browser": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 0,
+    "viewports": [
+      360,
+      1440
+    ]
+  },
+  "environment_note": "Initial browser launch could not find Chromium in the default cache; rerun used the existing PLAYWRIGHT_BROWSERS_PATH. No application change was needed.",
+  "history_note": "history contains results from earlier b68da2d/146b974 runs. They are not additional tests executed for this publication.",
+  "path_normalization": {
+    "$QA_WORKSPACE": "local QA workspace path omitted",
+    "$ORIGINAL_WORKTREE": "original local checkout path omitted",
+    "qa-local": "local JUnit hostname omitted"
+  },
+  "next_step": "Wait for user confirmation that backend fixes are complete, then test the newly pinned application commit and publish a final report commit.",
+  "qa_source_sha256": {
+    "qa/test_core_acceptance.py": "092a299d837b280c40f706828ab0b8039e32e0c01ea06f2e93d25bd57f176797",
+    "qa/core-acceptance.playwright.cjs": "8a0a8a3cdf8c32b12ad92e1f18714f7618b0b6ca7476065a644cbbb391211002",
+    "frontend/tests/acceptance-clarity.spec.cjs": "69bca7133e90f675cd6b2f75c08e147b21011c7021f688d5f47bd7e5e24afeda"
+  }
+}
