@@ -47,8 +47,12 @@ class Catalog:
             reader = csv.DictReader(handle)
             if not REQUIRED.issubset(reader.fieldnames or []):
                 raise ValueError("CSV is missing required columns")
+            if len(reader.fieldnames) != len(set(reader.fieldnames)):
+                raise ValueError("CSV contains duplicate column names")
             for line, row in enumerate(reader, 2):
                 try:
+                    if None in row or any(row[key] is None for key in REQUIRED):
+                        raise ValueError("CSV record has an unexpected number of fields")
                     if any(row[key] is None or not row[key].strip() for key in REQUIRED - {"max_hours", "busy_dates"}):
                         raise ValueError("A required field is empty")
                     item = Contractor(
@@ -69,6 +73,8 @@ class Catalog:
                         raise ValueError("Price and applicable duration must be positive finite numbers")
                     if any(not CALENDAR_MIN <= d <= CALENDAR_MAX for d in item.busy_dates):
                         raise ValueError("Busy date lies outside the dataset calendar")
+                    if len(split_list(row["busy_dates"])) != len(item.busy_dates):
+                        raise ValueError("Duplicate busy dates in one profile")
                     seen.add(item.id)
                     records.append(item)
                 except (ValueError, TypeError, AttributeError) as exc:

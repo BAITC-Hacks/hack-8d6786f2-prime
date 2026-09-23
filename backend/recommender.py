@@ -6,6 +6,9 @@ from .catalog import CALENDAR_MAX, Catalog, Contractor
 from .models import Query, Rejections, Suggestion
 
 STOPWORDS = {"для", "это", "как", "что", "чтобы", "или", "без", "нужен", "нужна", "нужно", "хочу", "нам", "при", "под", "его", "она", "они", "так", "все", "наш", "наша"}
+REJECTION_LABELS = {"busy": "заняты на выбранную дату", "budget": "стартовая цена выше бюджета",
+                    "event_type": "не указан выбранный формат", "language": "не указан выбранный язык",
+                    "duration": "не подходит длительность"}
 
 
 def tokens(text: str) -> set[str]:
@@ -36,6 +39,13 @@ class Selection:
     summary: str
 
 
+def explain_rejections(rejected: Rejections) -> str:
+    counts = [(key, count) for key, count in rejected.model_dump().items() if count]
+    text = "; ".join(f"{REJECTION_LABELS[key]} — {count}" for key, count in counts)
+    overlap = " У одного профиля может быть несколько причин." if len(counts) > 1 else ""
+    return f"Причины исключения: {text}.{overlap}" if counts else ""
+
+
 def select(catalog: Catalog, query: Query) -> Selection:
     base = [r for r in catalog.records if r.city == query.city and query.category in r.categories]
     rejected = Rejections()
@@ -52,14 +62,15 @@ def select(catalog: Catalog, query: Query) -> Selection:
         return Selection("no_category", base, [], rejected,
                          f'В городе «{query.city}» нет профилей категории «{query.category}» в этом каталоге.')
     if not eligible:
-        labels = {"busy": "занятость на дату", "budget": "стартовая цена выше бюджета",
-                  "event_type": "формат мероприятия", "language": "язык", "duration": "длительность"}
-        reasons_text = "; ".join(labels[k] for k, v in rejected.model_dump().items() if v)
         return Selection("no_match", base, [], rejected,
-                         f"В категории найдено {len(base)} профилей, но ни один не проходит все условия. Причины исключения: {reasons_text}.")
+                         f"В этой категории в городе профилей: {len(base)}; ни один не проходит все условия. {explain_rejections(rejected)}")
     total = len(eligible)
     if total < 3:
-        summary = f"Подходит профилей: {total}. Показываем все; остальные профили этой категории отсутствуют в каталоге или не проходят условия."
+        summary = f"Подходит профилей: {total}. Показываем все. "
+        if len(base) == total:
+            summary += f"В этой категории в городе в каталоге всего {len(base)} профилей."
+        else:
+            summary += f"Из {len(base)} профилей этой категории {len(base) - total} не проходят условия. {explain_rejections(rejected)}"
     else:
         summary = f"Подходит профилей: {total}. Показываем 3 по правилам подбора."
     return Selection("matched", base, eligible, rejected, summary)

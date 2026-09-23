@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .catalog import CALENDAR_MAX, CALENDAR_MIN, Catalog
 from .explainer import Explainer, Settings
-from .models import Card, Meta, Query, Recommendation
+from .models import Card, Health, Meta, Options, Query, Recommendation
 from .recommender import alternatives, select
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -24,12 +24,12 @@ def create_app(csv_path: Path | None = None, settings: Settings | None = None) -
     app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
                        allow_methods=["GET", "POST"], allow_headers=["Content-Type"])
 
-    @app.get("/api/health")
+    @app.get("/api/health", response_model=Health)
     def health():
         return {"status": "ok", "dataset_version": catalog.version,
                 "ai_available": explainer.settings.available}
 
-    @app.get("/api/options")
+    @app.get("/api/options", response_model=Options)
     def options():
         return catalog.options()
 

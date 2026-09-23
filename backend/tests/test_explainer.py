@@ -2,9 +2,10 @@ import asyncio
 import json
 
 import httpx
+import pytest
 
 from backend.app import create_app
-from backend.explainer import Explainer, Settings
+from backend.explainer import Choice, Explainer, Settings, compose, excerpts
 from backend.models import Query
 from backend.recommender import select
 from backend.tests.test_api import BASE
@@ -65,3 +66,61 @@ def test_total_timeout_returns_fallback():
     engine._request = slow
     result, mode = asyncio.run(engine.explain(items, query, catalog.version))
     assert mode == "fallback" and len(result) == 3
+
+
+def test_budget_equality_has_truthful_wording():
+    _, query, items = context()
+    item = items[0]
+    query = query.model_copy(update={"budget_kzt": item.price_from_kzt})
+    explanation, _ = compose(item, query, Choice(id=item.id, snippet_index=0, highlight="budget"), excerpts(item.description))
+    assert "равна предельному бюджету" in explanation
+    assert "на 0" not in explanation
+
+
+def test_credentials_are_hidden_in_settings_repr():
+    assert "private-value" not in repr(Settings(api_key="private-value"))
+
+
+def test_provider_errors_never_log_response_body(caplog):
+    catalog, query, items = context()
+    engine = Explainer(Settings(api_key="private-value"), httpx.MockTransport(
+        lambda r: httpx.Response(401, json={"error": {"message": "Your key is private-value"}})))
+    _, mode = asyncio.run(engine.explain(items, query, catalog.version))
+    assert mode == "fallback" and "http_status=401" in caplog.text
+    assert "private-value" not in caplog.text
+
+
+@pytest.mark.parametrize("content", ["not json", '{"items":[]}', '{"items":[{"id":"x","snippet_index":true,"highlight":"budget"}]}'])
+def test_malformed_model_output_falls_back(content):
+    catalog, query, items = context()
+    transport = httpx.MockTransport(lambda r: httpx.Response(200, json={"choices": [{"message": {"content": content}}]}))
+    _, mode = asyncio.run(Explainer(Settings(api_key="test"), transport).explain(items, query, catalog.version))
+    assert mode == "fallback"
+
+
+def test_nvidia_endpoint_and_json_handling():
+    catalog, query, items = context()
+    def handler(request):
+        assert str(request.url) == "https://integrate.api.nvidia.com/v1/chat/completions"
+        body = json.loads(request.content)
+        assert body["model"] == "test/model" and "max_tokens" in body
+        result = {"items": [{"id": r.id, "snippet_index": 0, "highlight": "event_type"} for r in items]}
+        return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(result)}}]})
+    _, mode = asyncio.run(Explainer(Settings(provider="nvidia", model="test/model", api_key="test"),
+                                   httpx.MockTransport(handler)).explain(items, query, catalog.version))
+    assert mode == "llm"
+
+
+def test_no_network_call_for_empty_selection():
+    catalog, query, _ = context()
+    def handler(request):
+        raise AssertionError("Empty selection must not call the model")
+    result, mode = asyncio.run(Explainer(Settings(api_key="test"), httpx.MockTransport(handler)).explain([], query, catalog.version))
+    assert result == {} and mode == "fallback"
+
+
+@pytest.mark.parametrize("timeout", ["nan", "inf", "0", "-1"])
+def test_invalid_timeout_is_rejected(monkeypatch, timeout):
+    monkeypatch.setenv("LLM_TIMEOUT_SECONDS", timeout)
+    with pytest.raises(ValueError):
+        Settings.from_env()

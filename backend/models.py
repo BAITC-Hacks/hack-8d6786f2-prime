@@ -1,7 +1,9 @@
 from datetime import date as Date
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+import re
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Query(BaseModel):
@@ -11,9 +13,41 @@ class Query(BaseModel):
     event_type: str = Field(min_length=1, max_length=80)
     category: str = Field(min_length=1, max_length=80)
     budget_kzt: int = Field(gt=0, strict=True)
-    duration_hours: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    duration_hours: float | None = Field(default=None, gt=0, allow_inf_nan=False, strict=True)
     language: str | None = Field(default=None, min_length=1, max_length=80)
     preferences: str = Field(default="", max_length=500)
+
+    @field_validator("date", mode="before")
+    @classmethod
+    def calendar_date_only(cls, value):
+        if type(value) is Date or (isinstance(value, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", value)):
+            return value
+        raise ValueError("Дата должна быть строкой YYYY-MM-DD")
+
+
+class Health(BaseModel):
+    status: Literal["ok"]
+    dataset_version: str
+    ai_available: bool
+
+
+class CalendarRange(BaseModel):
+    min: Date
+    max: Date
+
+
+class DatasetInfo(BaseModel):
+    version: str
+    profiles_count: int
+
+
+class Options(BaseModel):
+    cities: list[str]
+    categories: list[str]
+    event_types: list[str]
+    languages: list[str]
+    calendar: CalendarRange
+    dataset: DatasetInfo
 
 
 class Evidence(BaseModel):

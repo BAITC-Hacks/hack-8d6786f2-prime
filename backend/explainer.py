@@ -1,23 +1,38 @@
 import asyncio
 import hashlib
 import json
+import logging
+import math
 import os
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Literal
 
 import httpx
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .catalog import Contractor
 from .models import Evidence, Query
 from .recommender import tokens
 
+logger = logging.getLogger(__name__)
+FORMAT_STEMS = {
+    "свадьба": ("свад", "невест", "молодож"),
+    "той": ("той", "традиц", "националь"),
+    "корпоратив": ("корпоратив", "бизнес", "делов"),
+    "конференция": ("конференц", "форум", "делов"),
+    "юбилей": ("юбиле",),
+    "день рождения": ("рождени", "именин"),
+}
+FEATURE_STEMS = ("юмор", "сценари", "импровизац", "интерактив", "репортаж", "портрет", "флорист",
+                 "палитр", "композиц", "фотозон", "акуст", "скрипк", "саксофон", "традиц", "танц", "развлеч")
+INTRO = re.compile(r"^(привет|здравствуйте|меня зовут|я[, ]|коротко обо мне|дорог|с уважением)", re.I)
+
 
 @dataclass(frozen=True)
 class Settings:
     provider: str = "openai"
-    api_key: str = ""
+    api_key: str = field(default="", repr=False)
     model: str = "gpt-4o-mini"
     timeout: float = 6.0
 
@@ -27,9 +42,12 @@ class Settings:
         if provider not in {"openai", "nvidia"}:
             raise ValueError("LLM_PROVIDER must be openai or nvidia")
         prefix = provider.upper()
+        timeout = float(os.getenv("LLM_TIMEOUT_SECONDS", "6"))
+        if not math.isfinite(timeout) or timeout <= 0:
+            raise ValueError("LLM_TIMEOUT_SECONDS must be a positive finite number")
         return cls(provider, os.getenv(prefix + "_API_KEY", "").strip(),
                    os.getenv(prefix + "_MODEL", "gpt-4o-mini" if provider == "openai" else "").strip(),
-                   max(0.1, min(float(os.getenv("LLM_TIMEOUT_SECONDS", "6")), 8.0)))
+                   max(0.1, min(timeout, 8.0)))
 
     @property
     def available(self):
@@ -39,7 +57,7 @@ class Settings:
 class Choice(BaseModel):
     model_config = ConfigDict(extra="forbid")
     id: str
-    snippet_index: int
+    snippet_index: int = Field(strict=True)
     highlight: Literal["budget", "duration", "language", "event_type"]
 
 
@@ -61,8 +79,15 @@ def excerpts(description: str) -> list[str]:
 
 
 def fallback_choice(item: Contractor, query: Query, snippets: list[str]) -> Choice:
-    wanted = tokens(query.preferences + " " + query.event_type)
-    index = max(range(len(snippets)), key=lambda i: (len(tokens(snippets[i]) & wanted), -i))
+    wanted = tokens(query.preferences)
+    def relevance(index):
+        text = snippets[index].casefold().replace("ё", "е")
+        return (len(tokens(text) & wanted),
+                sum(stem in text for stem in FORMAT_STEMS.get(query.event_type, ())),
+                not bool(INTRO.match(text)),
+                sum(stem in text for stem in FEATURE_STEMS),
+                min(len(tokens(text)), 18), -index)
+    index = max(range(len(snippets)), key=relevance)
     highlight = "duration" if query.duration_hours is not None and item.max_hours is not None else "event_type"
     return Choice(id=item.id, snippet_index=index, highlight=highlight)
 
@@ -77,7 +102,9 @@ def compose(item: Contractor, query: Query, choice: Choice, snippets: list[str])
     elif choice.highlight == "language" and query.language:
         detail = f"работает на выбранном языке: {query.language}"
     elif choice.highlight == "budget":
-        detail = f"стартовая цена на {query.budget_kzt - item.price_from_kzt:,} ₸ ниже предельного бюджета".replace(",", " ")
+        difference = query.budget_kzt - item.price_from_kzt
+        detail = (f"стартовая цена на {difference:,} ₸ ниже предельного бюджета".replace(",", " ")
+                  if difference else "стартовая цена равна предельному бюджету")
     price_note = " (значение подготовлено для датасета)" if item.price_imputed else ""
     explanation = (f"В описании профиля: «{quote}». "
                    f"От {amount} ₸{price_note} при бюджете {budget} ₸; {detail}; "
@@ -157,7 +184,14 @@ class Explainer:
                         self.cache.pop(next(iter(self.cache)))
                     self.cache[key] = selected
                 mode = "llm"
-            except (httpx.HTTPError, TimeoutError, ValueError, TypeError, KeyError, IndexError):
-                # Never log provider responses or credentials. Do not cache transient failures.
+            except httpx.HTTPStatusError as exc:
+                logger.warning("LLM fallback: provider=%s http_status=%d", self.settings.provider, exc.response.status_code)
+                mode = "fallback"
+            except TimeoutError:
+                logger.warning("LLM fallback: provider=%s reason=total_timeout", self.settings.provider)
+                mode = "fallback"
+            except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError) as exc:
+                # Log exception class only: bodies, URLs and exception text may contain secrets.
+                logger.warning("LLM fallback: provider=%s reason=%s", self.settings.provider, type(exc).__name__)
                 mode = "fallback"
         return {r.id: compose(r, query, choice, snippets[r.id]) for r, choice in zip(items, selected)}, mode

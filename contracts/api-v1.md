@@ -9,6 +9,8 @@ GET /api/health
 {"status":"ok","dataset_version":"hash","ai_available":false}
 ```
 
+`ai_available` означает, что ключ и модель настроены. Это не проверка авторизации или доступности провайдера. Фактически использованный режим конкретного подбора указан в `meta.explanation_mode`. Приложение сохраняет работоспособность при fallback.
+
 GET /api/options
 
 ```json
