@@ -9,7 +9,6 @@ export const querySchema = z.object({
   budget_kzt: z.number().int().positive(),
   duration_hours: z.number().positive().nullable(),
   language: z.string().min(1).nullable(),
-  preferences: z.string().max(500),
 })
 export const optionsSchema = z.object({
   cities: z.array(z.string()).min(1),
@@ -134,7 +133,6 @@ export const emptyForm: FormValues = {
   budget_kzt: '',
   duration_hours: '',
   language: '',
-  preferences: '',
 }
 export const fieldLabels: Record<FieldName, string> = {
   city: 'Город',
@@ -144,7 +142,6 @@ export const fieldLabels: Record<FieldName, string> = {
   budget_kzt: 'Бюджет',
   duration_hours: 'Длительность',
   language: 'Язык',
-  preferences: 'Пожелания',
 }
 export function formToQuery(form: FormValues): Query {
   return {
@@ -156,7 +153,6 @@ export function formToQuery(form: FormValues): Query {
     duration_hours:
       form.duration_hours === '' ? null : Number(form.duration_hours.replace(',', '.')),
     language: form.language || null,
-    preferences: form.preferences.trim(),
   }
 }
 export function queryToForm(query: Query): FormValues {
@@ -183,7 +179,6 @@ export function validateForm(form: FormValues, options: Options): FieldErrors {
     errors.duration_hours = 'Введите число часов больше нуля.'
   if (q.language !== null && !options.languages.includes(q.language))
     errors.language = 'Выберите язык из списка.'
-  if (q.preferences.length > 500) errors.preferences = 'Не больше 500 символов.'
   return errors
 }
 export const formatMoney = (value: number) => new Intl.NumberFormat('ru-RU').format(value) + ' ₸'

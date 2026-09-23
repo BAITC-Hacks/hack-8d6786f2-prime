@@ -1,4 +1,3 @@
-import { ApiError } from '../api'
 import type { Options, Query, Recommendation, Contractor } from '../contracts'
 
 export const mockOptions: Options = {
@@ -17,7 +16,6 @@ export const mockQuery: Query = {
   budget_kzt: 1500000,
   duration_hours: 6,
   language: 'русский',
-  preferences: '',
 }
 const demoCard: Contractor = {
   id: 'demo-1',
@@ -101,31 +99,4 @@ export function makeMockResponse(
       latency_ms: 680,
     },
   }
-}
-export function delay(signal: AbortSignal) {
-  return new Promise<void>((resolve, reject) => {
-    if (signal.aborted) {
-      reject(new DOMException('Aborted', 'AbortError'))
-      return
-    }
-    const onAbort = () => {
-      clearTimeout(timer)
-      reject(new DOMException('Aborted', 'AbortError'))
-    }
-    const timer = setTimeout(() => {
-      signal.removeEventListener('abort', onAbort)
-      resolve()
-    }, 680)
-    signal.addEventListener('abort', onAbort, { once: true })
-  })
-}
-export async function mockRecommend(query: Query, scenario: Scenario, signal: AbortSignal) {
-  await delay(signal)
-  if (scenario === 'error')
-    throw new ApiError('Сервис временно не отвечает. Попробуйте ещё раз чуть позже.')
-  if (scenario === 'validation')
-    throw new ApiError('Проверьте условия мероприятия и попробуйте ещё раз.', {
-      budget_kzt: 'Укажите положительный бюджет в целых тенге.',
-    })
-  return makeMockResponse(query, scenario)
 }

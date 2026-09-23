@@ -11,7 +11,7 @@ afterEach(() => {
 })
 describe('API transport', () => {
   it('sends the agreed JSON and explicit optional nulls', async () => {
-    const query = { ...mockQuery, duration_hours: null, language: null, preferences: '' }
+    const query = { ...mockQuery, duration_hours: null, language: null }
     fetchMock.mockResolvedValue(
       new Response(JSON.stringify(makeMockResponse(query)), { status: 200 }),
     )

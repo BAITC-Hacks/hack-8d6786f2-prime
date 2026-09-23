@@ -21,13 +21,13 @@ def test_site_and_api_share_one_app_without_exposing_private_files(tmp_path):
     (public / "assets/app.js").write_text("console.log('public asset')", encoding="utf-8")
     (tmp_path / ".env").write_text("PRIVATE_VALUE=must-not-be-served", encoding="utf-8")
     app = create_app(settings=Settings(api_key=""), db_path=tmp_path / "catalog.sqlite3",
-                     admin_token="", frontend_dir=public)
+                     frontend_dir=public)
     with TestClient(app) as client:
         assert client.get("/").status_code == 200
         assert "public asset" in client.get("/assets/app.js").text
         assert client.get("/api/options").json()["dataset"]["profiles_count"] == 66
         assert client.post("/api/recommend", json={}).status_code == 422
-        assert client.get("/api/admin/profiles").status_code == 503
+        assert client.get("/api/admin/profiles").status_code == 404
         for path in ("/.env", "/catalog.sqlite3", "/backend/app.py", "/data/contractors.csv",
                      "/%2e%2e/.env", "/api/missing"):
             response = client.get(path)
@@ -66,13 +66,11 @@ def test_explicit_state_and_relative_config_paths_do_not_depend_on_working_direc
     assert paths.database == paths.resources / "data/another.sqlite3"
 
 
-def test_first_launch_configuration_is_unique_and_never_overwritten(tmp_path):
+def test_first_launch_configuration_is_created_once_and_never_overwritten(tmp_path):
     paths = RuntimePaths(tmp_path, tmp_path, tmp_path / ".env", True)
     initialize_config(paths)
     original = paths.env_file.read_text(encoding="utf-8")
     assert "OPENAI_API_KEY=\n" in original
-    token = next(line.split("=", 1)[1] for line in original.splitlines() if line.startswith("ADMIN_API_TOKEN="))
-    assert len(token) >= 32
     paths.env_file.write_text(original + "# local customization\n", encoding="utf-8")
     initialize_config(paths)
     assert paths.env_file.read_text(encoding="utf-8") == original + "# local customization\n"
@@ -81,4 +79,4 @@ def test_first_launch_configuration_is_unique_and_never_overwritten(tmp_path):
 def test_explicit_missing_frontend_build_is_a_startup_error(tmp_path):
     with pytest.raises(ValueError, match="Frontend build"):
         create_app(settings=Settings(api_key=""), db_path=tmp_path / "catalog.sqlite3",
-                   admin_token="", frontend_dir=tmp_path / "absent")
+                   frontend_dir=tmp_path / "absent")

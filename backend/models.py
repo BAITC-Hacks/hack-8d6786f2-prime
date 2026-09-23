@@ -15,7 +15,6 @@ class Query(BaseModel):
     budget_kzt: int = Field(gt=0, strict=True)
     duration_hours: float | None = Field(default=None, gt=0, allow_inf_nan=False, strict=True)
     language: str | None = Field(default=None, min_length=1, max_length=80)
-    preferences: str = Field(default="", max_length=500)
 
     @field_validator("date", mode="before")
     @classmethod

@@ -26,9 +26,8 @@ def context():
     "Бронируйте корпоратив с юмором и интерактивом для всех ваших гостей",
     "Готовы выступить на вашем мероприятии и подарить незабываемый корпоратив с юмором",
 ])
-def test_fallback_prefers_service_detail_even_when_invitation_matches_preferences(invitation):
+def test_fallback_prefers_service_detail_over_invitation(invitation):
     _, query, items = context()
-    query = query.model_copy(update={"preferences": "корпоратив с юмором и интерактивом"})
     detail = "В составе ансамбля четыре вокалиста и два инструменталиста"
     item = replace(items[0], description=f"{invitation}. {detail}.")
     snippets = excerpts(item.description)

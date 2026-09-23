@@ -30,7 +30,7 @@ function alternativeResponse() {
 }
 
 describe('API contract and form', () => {
-  it('preserves optional nulls and empty preferences, with numeric budget and duration', () => {
+  it('preserves optional nulls, with numeric budget and duration', () => {
     const form = {
       ...queryToForm(mockQuery),
       budget_kzt: '1 500 000',

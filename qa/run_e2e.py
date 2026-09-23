@@ -1,4 +1,4 @@
-"""Launch isolated API + Vite, run real browser platform acceptance, then clean up."""
+"""Launch isolated API + Vite, run browser recommendation acceptance, then clean up."""
 
 from contextlib import contextmanager
 import os
@@ -12,7 +12,7 @@ import time
 
 import httpx
 
-from test_platform_http import isolated_server, stop_process, ROOT, TOKEN
+from test_recommendation_http import isolated_server, stop_process, ROOT
 
 
 @contextmanager
@@ -52,15 +52,15 @@ def main():
         raise SystemExit("Node.js is required on PATH")
     output = ROOT / "qa" / "artifacts"
     output.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix="catalog-platform-e2e-") as directory:
+    with tempfile.TemporaryDirectory(prefix="recommendation-e2e-") as directory:
         temporary = Path(directory)
         with isolated_server(temporary / "catalog.sqlite3") as api:
             with frontend(str(api.base_url).rstrip("/"), temporary, node) as url:
                 env = dict(os.environ, QA_DATABASE_ISOLATED="1", QA_FRONTEND_URL=url,
-                           QA_ADMIN_TOKEN=TOKEN, QA_BROWSER_OUTPUT=str(output))
+                           RUN_BACKEND_TESTS="1", QA_BROWSER_OUTPUT=str(output))
                 result = subprocess.run(
                     [node, str(ROOT / "frontend/node_modules/@playwright/test/cli.js"), "test",
-                     "--config", str(ROOT / "qa/platform-playwright.config.cjs"), *sys.argv[1:]],
+                     "--config", str(ROOT / "qa/playwright.config.cjs"), *sys.argv[1:]],
                     cwd=ROOT / "frontend", env=env,
                 )
                 return result.returncode

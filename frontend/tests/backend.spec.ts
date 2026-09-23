@@ -64,11 +64,11 @@ test('real API options, ranked matches, fallback, desktop and mobile', async ({
       .violations,
   ).toEqual([])
   await page.locator('h1').click()
-  await page.screenshot({ path: 'docs/screenshots/real-api-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/screenshots/real-api-desktop.png', fullPage: true })
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.locator('h1').click()
-  await page.screenshot({ path: 'docs/screenshots/real-api-mobile.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/screenshots/real-api-mobile.png', fullPage: true })
 })
 test('real no_match suggestion changes date and then returns one candidate', async ({ page }) => {
   await fillRealForm(page, { budget: '600000' })

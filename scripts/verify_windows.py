@@ -13,7 +13,6 @@ import time
 import zipfile
 
 import httpx
-from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -95,33 +94,25 @@ def main():
             assert ensemble["evidence"][0]["value"] in ensemble["description"]
             for path in ("/.env", "/data/catalog.sqlite3", "/backend/app.py"):
                 assert client.get(path).status_code == 404
-            token = dotenv_values(state / ".env")["ADMIN_API_TOKEN"]
-            auth = {"Authorization": "Bearer " + token}
-            assert client.get("/api/admin/profiles", headers=auth).json()["total"] == 66
+            assert client.get("/api/admin/profiles").status_code == 404
+            assert client.post("/api/applications", json={}).status_code in {404, 405}
+            version = client.get("/api/health").json()["dataset_version"]
             if args.browser:
                 node = shutil.which("node")
                 if not node:
                     raise RuntimeError("Node.js is required only for the browser test runner")
                 browser_env = dict(os.environ, QA_FRONTEND_URL=str(client.base_url).rstrip("/"),
-                                   QA_DATABASE_ISOLATED="1", QA_ADMIN_TOKEN=token, RUN_BACKEND_TESTS="1")
+                                   RUN_BACKEND_TESTS="1")
                 result = subprocess.run([node, "node_modules/@playwright/test/cli.js", "test",
-                                         "tests/backend.spec.ts", "tests/platform.spec.ts"],
+                                         "tests/backend.spec.ts", "tests/alternatives.spec.ts"],
                                         cwd=ROOT / "frontend", env=browser_env, capture_output=True,
                                         encoding="utf-8", errors="replace")
                 print(result.stdout)
                 if result.returncode:
                     raise RuntimeError("Packaged app browser checks failed")
-            body = {"name": "Проверка сохранности EXE", "city": "Алматы", "categories": ["Ведущий"],
-                    "event_formats": ["корпоратив"], "languages": ["русский"], "price_from_kzt": 500000,
-                    "max_hours": 6, "busy_dates": [], "description": "Музыкальные викторины и интерактивная программа для гостей.",
-                    "contact_email": "package-test@example.com", "synthetic": True}
-            response = client.post("/api/admin/profiles", headers=auth, json=body)
-            assert response.status_code == 201
-            created = response.json()["id"]
         with running(executable, state, missing_seed=True) as client:
-            listing = client.get("/api/admin/profiles", headers=auth, params={"limit": 100}).json()
-            assert any(item["id"] == created for item in listing["items"])
-            assert client.get("/api/options").json()["dataset"]["profiles_count"] == 67
+            assert client.get("/api/health").json()["dataset_version"] == version
+            assert client.get("/api/options").json()["dataset"]["profiles_count"] == 66
         print(json.dumps({"package": "passed", "restart_without_csv": "passed", "fallback_evidence": "passed",
                           "external_python_node_on_app_path": False, "browser": args.browser}))
 

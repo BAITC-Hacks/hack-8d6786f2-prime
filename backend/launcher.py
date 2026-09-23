@@ -2,7 +2,6 @@
 import argparse
 import asyncio
 import os
-import secrets
 import socket
 import sys
 import webbrowser
@@ -21,8 +20,7 @@ def initialize_config(paths):
         with paths.env_file.open("x", encoding="utf-8") as output:
             output.write("# Local settings. Do not share this file or commit it to Git.\n"
                          "LLM_PROVIDER=openai\nOPENAI_API_KEY=\nOPENAI_MODEL=gpt-4o-mini\n"
-                         "NVIDIA_API_KEY=\nNVIDIA_MODEL=\nLLM_TIMEOUT_SECONDS=6\n"
-                         "ADMIN_API_TOKEN=" + secrets.token_urlsafe(32) + "\n")
+                         "NVIDIA_API_KEY=\nNVIDIA_MODEL=\nLLM_TIMEOUT_SECONDS=6\n")
     except FileExistsError:
         pass
 
@@ -67,7 +65,7 @@ def main(argv=None):
         port = listener.getsockname()[1]
         url = f"http://127.0.0.1:{port}"
         app = create_app(frontend_dir=paths.frontend)
-        print(f"Сәт: {url}\nНастройки и код администратора: {paths.env_file}\n"
+        print(f"Сәт: {url}\nНастройки: {paths.env_file}\n"
               f"SQL-база: {paths.database}\nДля остановки нажмите Ctrl+C в этом окне.", flush=True)
         if not app.state.explainer.settings.available:
             print("Подбор работает с базовыми объяснениями. Для ИИ заполните ключ в настройках и перезапустите.", flush=True)

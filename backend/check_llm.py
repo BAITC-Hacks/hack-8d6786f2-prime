@@ -20,7 +20,7 @@ async def check() -> int:
         return 2
     catalog = Store(paths.database, paths.seed).snapshot()
     query = Query(city="Алматы", date="2026-11-14", event_type="корпоратив", category="Ведущий",
-                  budget_kzt=1500000, duration_hours=6, language="русский", preferences="интеллигентный юмор")
+                  budget_kzt=1500000, duration_hours=6, language="русский")
     selected = select(catalog, query).eligible[:3]
     started = time.perf_counter()
     explanations, mode = await Explainer(settings).explain(selected, query, catalog.version)

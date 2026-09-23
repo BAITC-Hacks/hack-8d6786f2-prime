@@ -56,8 +56,7 @@ def select(catalog: Catalog, query: Query) -> Selection:
             setattr(rejected, reason, getattr(rejected, reason) + 1)
         if not reasons:
             eligible.append(item)
-    preference_tokens = tokens(query.preferences)
-    eligible.sort(key=lambda r: (-len(tokens(r.description) & preference_tokens), r.price_from_kzt, r.id))
+    eligible.sort(key=lambda r: (r.price_from_kzt, r.id))
     if not base:
         return Selection("no_category", base, [], rejected,
                          f'В городе «{query.city}» нет профилей категории «{query.category}» в этом каталоге.')

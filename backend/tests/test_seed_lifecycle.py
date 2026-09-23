@@ -8,34 +8,42 @@ from fastapi.testclient import TestClient
 from backend.application import create_app
 from backend.explainer import Settings
 from backend.storage import Store
-from backend.profiles import ProfileInput
-from backend.tests.test_profile_rules import profile
 
 SOURCE = Path(__file__).resolve().parents[2] / "data" / "contractors.csv"
 
 
-def test_initialized_database_survives_missing_csv_without_losing_moderation(tmp_path):
+def test_initialized_database_survives_missing_csv(tmp_path):
     seed = tmp_path / "import.csv"
     shutil.copyfile(SOURCE, seed)
     database = tmp_path / "catalog.sqlite3"
-    app = create_app(csv_path=seed, db_path=database, settings=Settings(api_key=""), admin_token="")
+    app = create_app(csv_path=seed, db_path=database, settings=Settings(api_key=""))
     store = app.state.store
-    item = store.create(ProfileInput(**profile()))
-    store.moderate(item["id"], "approved", 1, "Проверено")
-    store.delete("HK-44923", 1)
+    expected_records = store.snapshot().records
     expected_version = store.snapshot().version
     seed.unlink()
 
-    restarted = create_app(csv_path=seed, db_path=database, settings=Settings(api_key=""), admin_token="")
+    restarted = create_app(csv_path=seed, db_path=database, settings=Settings(api_key=""))
     with TestClient(restarted) as client:
         assert client.get("/api/health").json()["dataset_version"] == expected_version
         assert client.get("/api/options").json()["dataset"]["profiles_count"] == 66
-    records = restarted.state.store.list_profiles(limit=100)["items"]
-    assert all(row["id"] != "HK-44923" for row in records)
-    saved = next(row for row in records if row["id"] == item["id"])
-    assert saved["status"] == "approved" and saved["revision"] == 2
-    assert saved["moderation_note"] == "Проверено"
-    assert saved["contact_email"] == "backend-test@example.com"
+    assert restarted.state.store.snapshot().records == expected_records
+
+
+def test_sql_snapshot_preserves_every_source_record_and_flag(tmp_path):
+    from backend.catalog import Catalog
+    source = Catalog(SOURCE)
+    saved = Store(tmp_path / "catalog.sqlite3", SOURCE).snapshot()
+    assert saved.version == Store(tmp_path / "catalog.sqlite3", SOURCE).snapshot().version
+    expected = {row.id: row for row in source.records}
+    assert {row.id for row in saved.records} == set(expected)
+    relations = {"categories", "event_formats", "languages"}
+    for row in saved.records:
+        original = expected[row.id]
+        assert {k: v for k, v in vars(row).items() if k not in relations} == {
+            k: v for k, v in vars(original).items() if k not in relations
+        }
+        for field in relations:
+            assert set(getattr(row, field)) == set(getattr(original, field))
 
 
 def test_failed_first_import_can_be_retried_without_partial_seed(tmp_path):

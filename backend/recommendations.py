@@ -4,7 +4,7 @@ import time
 from anyio import to_thread
 
 from .catalog import CALENDAR_MAX, CALENDAR_MIN
-from .explainer import Explainer, Settings, compose, excerpts, fallback_choice
+from .explainer import compose, excerpts, fallback_choice
 from .models import Alternative, Card, Meta, Recommendation
 from .recommender import alternatives, nearby_candidates, select
 
@@ -30,13 +30,6 @@ async def recommend(store, explainer, query):
     selection = select(catalog, query)
     top = selection.eligible[:3]
     explanations, mode = await explainer.explain(top, query, catalog.version)
-    # A moderation change during an LLM request must not publish a removed profile.
-    latest = await to_thread.run_sync(store.snapshot)
-    if latest.version != catalog.version:
-        catalog = latest
-        selection = select(catalog, query)
-        top = selection.eligible[:3]
-        explanations, mode = await Explainer(Settings()).explain(top, query, catalog.version)
     cards = [make_card(row, query, explanations[row.id]) for row in top]
     near = []
     for row, proposed, changes, differences in nearby_candidates(query, selection):

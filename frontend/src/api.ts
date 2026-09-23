@@ -29,7 +29,6 @@ const messages: FieldErrors = {
   budget_kzt: 'Укажите положительный бюджет в целых тенге.',
   duration_hours: 'Укажите длительность больше нуля или оставьте поле пустым.',
   language: 'Выберите язык из списка или оставьте без ограничений.',
-  preferences: 'Сократите пожелания до 500 символов.',
 }
 async function request<T>(
   path: string,

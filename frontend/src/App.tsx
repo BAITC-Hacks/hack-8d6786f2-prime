@@ -38,20 +38,6 @@ import {
   type Recommendation,
   type Suggestion,
 } from './contracts'
-import type { Scenario } from './mocks/fixtures'
-import { AdminPage, ApplicationPage } from './PlatformPages'
-
-const isDemo = import.meta.env.DEV && import.meta.env.VITE_MOCK_MODE === 'true'
-const scenarios: { value: Scenario; label: string }[] = [
-  { value: 'matched', label: 'Три результата' },
-  { value: 'one', label: 'Один результат' },
-  { value: 'two', label: 'Два результата' },
-  { value: 'no_category', label: 'Нет категории' },
-  { value: 'no_match', label: 'Нет совпадений' },
-  { value: 'fallback', label: 'Базовые объяснения' },
-  { value: 'error', label: 'Ошибка сервиса' },
-  { value: 'validation', label: 'Ошибка полей' },
-]
 function Field({
   name,
   label,
@@ -454,13 +440,6 @@ function Results({
 }
 
 export default function App({ client = api }: { client?: Api }) {
-  const [route, setRoute] = useState(() =>
-    window.location.hash === '#/apply'
-      ? 'apply'
-      : window.location.hash === '#/admin'
-        ? 'admin'
-        : 'search',
-  )
   const [options, setOptions] = useState<Options | null>(null)
   const [optionsError, setOptionsError] = useState<string | null>(null)
   const [optionsAttempt, setOptionsAttempt] = useState(0)
@@ -471,7 +450,6 @@ export default function App({ client = api }: { client?: Api }) {
   const [loading, setLoading] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [notice, setNotice] = useState('')
-  const [scenario, setScenario] = useState<Scenario>('matched')
   const activeRequest = useRef<AbortController | null>(null)
   const sequence = useRef(0)
   const formRef = useRef<HTMLFormElement>(null)
@@ -479,37 +457,12 @@ export default function App({ client = api }: { client?: Api }) {
   const dialog = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
-    const navigate = () => {
-      if (['#/apply', '#/admin', '#/', ''].includes(window.location.hash)) {
-        setRoute(
-          window.location.hash === '#/apply'
-            ? 'apply'
-            : window.location.hash === '#/admin'
-              ? 'admin'
-              : 'search',
-        )
-        window.scrollTo?.(0, 0)
-      }
-    }
-    window.addEventListener('hashchange', navigate)
-    return () => window.removeEventListener('hashchange', navigate)
-  }, [])
-
-  useEffect(() => {
     const controller = new AbortController()
     setOptionsError(null)
     const load = async () => {
       try {
-        if (isDemo) {
-          const mock = await import('./mocks/fixtures')
-          if (!controller.signal.aborted) {
-            setOptions(mock.mockOptions)
-            setForm(queryToForm(mock.mockQuery))
-          }
-        } else {
-          const next = await client.getOptions(controller.signal)
-          if (!controller.signal.aborted) setOptions(next)
-        }
+        const next = await client.getOptions(controller.signal)
+        if (!controller.signal.aborted) setOptions(next)
       } catch (error) {
         if (!controller.signal.aborted)
           setOptionsError(
@@ -565,9 +518,7 @@ export default function App({ client = api }: { client?: Api }) {
     setRequestError(null)
     try {
       const query: Query = formToQuery(form)
-      const next = isDemo
-        ? await (await import('./mocks/fixtures')).mockRecommend(query, scenario, controller.signal)
-        : await client.recommend(query, controller.signal)
+      const next = await client.recommend(query, controller.signal)
       if (id !== sequence.current || controller.signal.aborted) return
       setResult(next)
       setDirty(false)
@@ -633,31 +584,9 @@ export default function App({ client = api }: { client?: Api }) {
 
   return (
     <>
-      <a href={route === 'search' ? '#event-form' : '#platform-main'} className="skip-link">
-        {route === 'search' ? 'Перейти к подбору' : 'Перейти к содержимому'}
+      <a href="#event-form" className="skip-link">
+        Перейти к подбору
       </a>
-      {isDemo && (
-        <div className="demo-toolbar">
-          <span>
-            <b>Демонстрация.</b> Вымышленные примеры, без реального подбора.
-          </span>
-          <label htmlFor="scenario">Сценарий</label>
-          <select
-            id="scenario"
-            value={scenario}
-            onChange={(e) => {
-              invalidate()
-              setScenario(e.target.value as Scenario)
-            }}
-          >
-            {scenarios.map((item) => (
-              <option key={item.value} value={item.value}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
       <header className="site-header">
         <div className="header-inner">
           <a className="brand" href="#/" aria-label="сәт — главная">
@@ -667,264 +596,196 @@ export default function App({ client = api }: { client?: Api }) {
             сәт<span className="brand-dot">.</span>
           </a>
           <nav aria-label="Основная навигация">
-            <a
-              className={route === 'search' ? 'active-nav' : ''}
-              aria-current={route === 'search' ? 'page' : undefined}
-              href="#/"
-            >
-              Подбор
-            </a>
-            <a
-              className={route === 'apply' ? 'active-nav' : ''}
-              aria-current={route === 'apply' ? 'page' : undefined}
-              href="#/apply"
-            >
-              Подрядчикам
-            </a>
-            <a
-              className={route === 'admin' ? 'active-nav' : ''}
-              aria-current={route === 'admin' ? 'page' : undefined}
-              href="#/admin"
-            >
-              Администратору
-            </a>
-            {route === 'search' && (
-              <button onClick={() => dialog.current?.showModal()}>
-                Как это работает
-                <ArrowUpRight size={15} aria-hidden="true" />
-              </button>
-            )}
+            <a href="#event-form">Подбор</a>
+            <button onClick={() => dialog.current?.showModal()}>
+              Как это работает
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </button>
           </nav>
           <span className="header-mark">Создано для ваших событий</span>
         </div>
       </header>
-      {isDemo && route !== 'search' ? (
-        <main id="platform-main" className="platform-main">
-          <div className="platform-heading">
-            <h1>Демонстрация подбора</h1>
-          </div>
-          <section className="platform-panel">
-            <h2>Анкеты доступны в обычном режиме</h2>
-            <p className="section-intro">
-              В демонстрации используются вымышленные примеры. Отправка анкет и вход в панель здесь
-              отключены.
+      <main id="top">
+        <section className="hero" aria-labelledby="hero-title">
+          <div>
+            <p className="eyebrow">
+              <span />
+              ЛЮДИ, С КОТОРЫМИ ВСЁ СЛОЖИТСЯ
             </p>
-            <a className="secondary-button" href="#/">
-              Вернуться к подбору
-            </a>
-          </section>
-        </main>
-      ) : route === 'apply' ? (
-        <ApplicationPage
-          options={options}
-          error={optionsError}
-          onRetry={() => setOptionsAttempt((n) => n + 1)}
-        />
-      ) : route === 'admin' ? (
-        <AdminPage
-          options={options}
-          optionsError={optionsError}
-          onRetry={() => setOptionsAttempt((n) => n + 1)}
-        />
-      ) : (
-        <main id="top">
-          <section className="hero" aria-labelledby="hero-title">
-            <div>
-              <p className="eyebrow">
-                <span />
-                ЛЮДИ, С КОТОРЫМИ ВСЁ СЛОЖИТСЯ
-              </p>
-              <h1 id="hero-title">
-                Ваше событие.
-                <br />
-                <em>Подходящие люди.</em>
-              </h1>
-              <p className="hero-copy">
-                Расскажите о планах — найдём подрядчиков
-                <br className="desktop-break" /> и объясним, почему они вам подходят.
-              </p>
-            </div>
-            <div className="hero-aside" aria-hidden="true">
-              <div className="orbital-line" />
-              <div className="event-seal">
-                <Asterisk size={24} />
-                <span>Меньше поиска.</span>
-                <b>
-                  Больше
-                  <br />
-                  совпадений.
-                </b>
-                <span className="seal-line" />
-              </div>
-              <span className="floating-star">✳</span>
-            </div>
-          </section>
-          <div className="workspace">
-            <aside className="form-panel">
-              <div className="panel-heading">
-                <p className="section-kicker">
-                  <span>01</span>Детали мероприятия
-                </p>
-                <h2>О вашем событии</h2>
-                <p>Начнём с того, что для вас важно.</p>
-              </div>
-              {optionsError && (
-                <div className="options-error" role="alert">
-                  <Info size={18} />
-                  <p>{optionsError}</p>
-                  <button className="text-button" onClick={() => setOptionsAttempt((n) => n + 1)}>
-                    Повторить загрузку
-                  </button>
-                </div>
-              )}
-              {!options && !optionsError && (
-                <p className="options-loading" role="status">
-                  <LoaderCircle className="spin" size={17} />
-                  Загружаем параметры…
-                </p>
-              )}
-              <form id="event-form" ref={formRef} onSubmit={submit} noValidate>
-                <fieldset disabled={!options}>
-                  <legend className="sr-only">Условия подбора подрядчиков</legend>
-                  <div className="form-grid">
-                    <Field name="city" label="Город" error={errors.city}>
-                      {select('city', options?.cities ?? [], 'Выберите город')}
-                    </Field>
-                    <Field name="date" label="Дата" error={errors.date}>
-                      <input
-                        type="date"
-                        required
-                        min={options?.calendar.min}
-                        max={options?.calendar.max}
-                        {...attrs('date')}
-                      />
-                    </Field>
-                  </div>
-                  {options && (
-                    <p className="calendar-note">
-                      Календарь: {formatDate(options.calendar.min)} —{' '}
-                      {formatDate(options.calendar.max, true)}
-                    </p>
-                  )}
-                  <Field name="event_type" label="Тип мероприятия" error={errors.event_type}>
-                    {select('event_type', options?.event_types ?? [], 'Какое событие планируете?')}
-                  </Field>
-                  <Field name="category" label="Кого ищем?" error={errors.category}>
-                    {select('category', options?.categories ?? [], 'Выберите категорию')}
-                  </Field>
-                  <Field
-                    name="budget_kzt"
-                    label="Бюджет до"
-                    error={errors.budget_kzt}
-                    hint="За мероприятие, в тенге"
-                  >
-                    <div className="input-unit">
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        autoComplete="off"
-                        required
-                        placeholder="Например, 500 000"
-                        {...attrs('budget_kzt', true)}
-                      />
-                      <span aria-hidden="true">₸</span>
-                    </div>
-                  </Field>
-                  <div className="optional-divider">
-                    <span>Дополнительно · необязательно</span>
-                  </div>
-                  <div className="form-grid optional-grid">
-                    <Field name="language" label="Язык" error={errors.language}>
-                      {select('language', options?.languages ?? [], 'Неважно', true)}
-                    </Field>
-                    <Field
-                      name="duration_hours"
-                      label="Длительность, ч"
-                      error={errors.duration_hours}
-                    >
-                      <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="Неважно"
-                        {...attrs('duration_hours')}
-                      />
-                    </Field>
-                  </div>
-                  <Field
-                    name="preferences"
-                    label="Что ещё важно?"
-                    optional
-                    error={errors.preferences}
-                  >
-                    <textarea
-                      rows={3}
-                      maxLength={500}
-                      placeholder="Атмосфера, стиль, особые пожелания…"
-                      {...attrs('preferences')}
-                    />
-                    <span className="character-count" aria-hidden="true">
-                      {form.preferences.length}/500
-                    </span>
-                  </Field>
-                  {notice && (
-                    <p className="form-notice" role="status">
-                      {notice}
-                    </p>
-                  )}
-                  {Object.values(errors).some(Boolean) && (
-                    <p className="validation-summary" role="alert">
-                      Проверьте отмеченные поля.
-                    </p>
-                  )}
-                  <button type="submit" className="primary-button" disabled={!options || loading}>
-                    {loading ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}
-                    <span>{loading ? 'Подбираем…' : 'Подобрать подрядчиков'}</span>
-                    {!loading && <ArrowRight size={18} />}
-                  </button>
-                  <p className="form-footnote">Учитываем дату, бюджет и ваши условия</p>
-                </fieldset>
-              </form>
-            </aside>
-            <Results
-              result={result}
-              loading={loading}
-              error={requestError}
-              dirty={dirty}
-              onSuggestion={applySuggestion}
-              onRetry={() => void submit()}
-              headingRef={resultsHeading}
-            />
+            <h1 id="hero-title">
+              Ваше событие.
+              <br />
+              <em>Подходящие люди.</em>
+            </h1>
+            <p className="hero-copy">
+              Расскажите о планах — найдём подрядчиков
+              <br className="desktop-break" /> и объясним, почему они вам подходят.
+            </p>
           </div>
-          <section className="how-strip" aria-label="Как устроен подбор">
-            <div>
-              <span>01</span>
-              <p>
-                <b>Ваши условия</b>Город, дата и бюджет
-              </p>
+          <div className="hero-aside" aria-hidden="true">
+            <div className="orbital-line" />
+            <div className="event-seal">
+              <Asterisk size={24} />
+              <span>Меньше поиска.</span>
+              <b>
+                Больше
+                <br />
+                совпадений.
+              </b>
+              <span className="seal-line" />
             </div>
-            <ArrowRight size={17} aria-hidden="true" />
-            <div>
-              <span>02</span>
-              <p>
-                <b>Точные совпадения</b>До трёх подходящих вариантов
+            <span className="floating-star">✳</span>
+          </div>
+        </section>
+        <div className="workspace">
+          <aside className="form-panel">
+            <div className="panel-heading">
+              <p className="section-kicker">
+                <span>01</span>Детали мероприятия
               </p>
+              <h2>О вашем событии</h2>
+              <p>Начнём с того, что для вас важно.</p>
             </div>
-            <ArrowRight size={17} aria-hidden="true" />
-            <div>
-              <span>03</span>
-              <p>
-                <b>Понятный выбор</b>Объяснение для каждого
+            {optionsError && (
+              <div className="options-error" role="alert">
+                <Info size={18} />
+                <p>{optionsError}</p>
+                <button className="text-button" onClick={() => setOptionsAttempt((n) => n + 1)}>
+                  Повторить загрузку
+                </button>
+              </div>
+            )}
+            {!options && !optionsError && (
+              <p className="options-loading" role="status">
+                <LoaderCircle className="spin" size={17} />
+                Загружаем параметры…
               </p>
-            </div>
-          </section>
-          <footer>
-            <span className="footer-brand">
-              сәт <span>Умный подбор подрядчиков</span>
-            </span>
-            <span>Хорошее событие начинается с людей.</span>
-          </footer>
-        </main>
-      )}
+            )}
+            <form id="event-form" ref={formRef} onSubmit={submit} noValidate>
+              <fieldset disabled={!options}>
+                <legend className="sr-only">Условия подбора подрядчиков</legend>
+                <div className="form-grid">
+                  <Field name="city" label="Город" error={errors.city}>
+                    {select('city', options?.cities ?? [], 'Выберите город')}
+                  </Field>
+                  <Field name="date" label="Дата" error={errors.date}>
+                    <input
+                      type="date"
+                      required
+                      min={options?.calendar.min}
+                      max={options?.calendar.max}
+                      {...attrs('date')}
+                    />
+                  </Field>
+                </div>
+                {options && (
+                  <p className="calendar-note">
+                    Календарь: {formatDate(options.calendar.min)} —{' '}
+                    {formatDate(options.calendar.max, true)}
+                  </p>
+                )}
+                <Field name="event_type" label="Тип мероприятия" error={errors.event_type}>
+                  {select('event_type', options?.event_types ?? [], 'Какое событие планируете?')}
+                </Field>
+                <Field name="category" label="Кого ищем?" error={errors.category}>
+                  {select('category', options?.categories ?? [], 'Выберите категорию')}
+                </Field>
+                <Field
+                  name="budget_kzt"
+                  label="Бюджет до"
+                  error={errors.budget_kzt}
+                  hint="За мероприятие, в тенге"
+                >
+                  <div className="input-unit">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      required
+                      placeholder="Например, 500 000"
+                      {...attrs('budget_kzt', true)}
+                    />
+                    <span aria-hidden="true">₸</span>
+                  </div>
+                </Field>
+                <div className="optional-divider">
+                  <span>Дополнительно · необязательно</span>
+                </div>
+                <div className="form-grid optional-grid">
+                  <Field name="language" label="Язык" error={errors.language}>
+                    {select('language', options?.languages ?? [], 'Неважно', true)}
+                  </Field>
+                  <Field
+                    name="duration_hours"
+                    label="Длительность, ч"
+                    error={errors.duration_hours}
+                  >
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      placeholder="Неважно"
+                      {...attrs('duration_hours')}
+                    />
+                  </Field>
+                </div>
+                {notice && (
+                  <p className="form-notice" role="status">
+                    {notice}
+                  </p>
+                )}
+                {Object.values(errors).some(Boolean) && (
+                  <p className="validation-summary" role="alert">
+                    Проверьте отмеченные поля.
+                  </p>
+                )}
+                <button type="submit" className="primary-button" disabled={!options || loading}>
+                  {loading ? <LoaderCircle className="spin" size={18} /> : <Sparkles size={18} />}
+                  <span>{loading ? 'Подбираем…' : 'Подобрать подрядчиков'}</span>
+                  {!loading && <ArrowRight size={18} />}
+                </button>
+                <p className="form-footnote">Учитываем дату, бюджет и ваши условия</p>
+              </fieldset>
+            </form>
+          </aside>
+          <Results
+            result={result}
+            loading={loading}
+            error={requestError}
+            dirty={dirty}
+            onSuggestion={applySuggestion}
+            onRetry={() => void submit()}
+            headingRef={resultsHeading}
+          />
+        </div>
+        <section className="how-strip" aria-label="Как устроен подбор">
+          <div>
+            <span>01</span>
+            <p>
+              <b>Ваши условия</b>Город, дата и бюджет
+            </p>
+          </div>
+          <ArrowRight size={17} aria-hidden="true" />
+          <div>
+            <span>02</span>
+            <p>
+              <b>Точные совпадения</b>До трёх подходящих вариантов
+            </p>
+          </div>
+          <ArrowRight size={17} aria-hidden="true" />
+          <div>
+            <span>03</span>
+            <p>
+              <b>Понятный выбор</b>Объяснение для каждого
+            </p>
+          </div>
+        </section>
+        <footer>
+          <span className="footer-brand">
+            сәт <span>Умный подбор подрядчиков</span>
+          </span>
+          <span>Хорошее событие начинается с людей.</span>
+        </footer>
+      </main>
       <dialog
         ref={dialog}
         className="how-dialog"
@@ -947,7 +808,7 @@ export default function App({ client = api }: { client?: Api }) {
         <ol>
           <li>
             <b>Расскажите о событии.</b> Укажите город, дату, категорию, тип мероприятия и бюджет.
-            Язык, длительность и пожелания — по желанию.
+            Язык и длительность — по желанию.
           </li>
           <li>
             <b>Получите подходящие варианты.</b> Сервис проверит ограничения и покажет до трёх

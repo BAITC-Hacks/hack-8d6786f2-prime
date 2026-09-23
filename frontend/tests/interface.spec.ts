@@ -37,7 +37,7 @@ test('initial state, keyboard, dialog and screenshot', async ({ page }) => {
   await page.keyboard.press('Escape')
   await expect(page.getByRole('dialog')).not.toBeVisible()
   await page.locator('h1').click()
-  await page.screenshot({ path: 'docs/screenshots/initial-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/screenshots/initial-desktop.png', fullPage: true })
 })
 test('matched order, count, descriptions, annotations and accessible desktop', async ({ page }) => {
   await prepare(page)
@@ -62,7 +62,7 @@ test('matched order, count, descriptions, annotations and accessible desktop', a
       .violations,
   ).toEqual([])
   await page.locator('h1').click()
-  await page.screenshot({ path: 'docs/screenshots/matched-desktop.png', fullPage: true })
+  await page.screenshot({ path: 'test-results/screenshots/matched-desktop.png', fullPage: true })
 })
 for (const scenario of ['one', 'two', 'no_category', 'no_match', 'fallback'] as const) {
   test('response state: ' + scenario, async ({ page }) => {
@@ -77,7 +77,10 @@ for (const scenario of ['one', 'two', 'no_category', 'no_match', 'fallback'] as 
     if (scenario === 'no_match') {
       await expect(page.getByRole('heading', { name: 'Пока нет точного совпадения' })).toBeVisible()
       await page.locator('h1').click()
-      await page.screenshot({ path: 'docs/screenshots/no-match-desktop.png', fullPage: true })
+      await page.screenshot({
+        path: 'test-results/screenshots/no-match-desktop.png',
+        fullPage: true,
+      })
       await page.getByRole('button', { name: /Проверить другую дату/ }).click()
       await expect(page.getByLabel('Дата', { exact: true })).toHaveValue('2026-11-15')
       await expect(page.getByText(/Условия изменены: дата/)).toBeVisible()
@@ -189,12 +192,20 @@ for (const width of [360, 390, 1280]) {
         .violations,
     ).toEqual([])
     await page.locator('h1').click()
-    await page.screenshot({ path: 'docs/screenshots/matched-' + width + '.png', fullPage: true })
+    await page.screenshot({
+      path: 'test-results/screenshots/matched-' + width + '.png',
+      fullPage: true,
+    })
   })
 }
-test('reference is independently viewable', async ({ page }) => {
-  await page.goto('/docs/reference.html')
-  await expect(page.locator('article')).toHaveCount(3)
-  await page.locator('h1').click()
-  await page.screenshot({ path: 'docs/reference-desktop.png', fullPage: true })
+test('the interface contains only the seven case inputs and recommendation navigation', async ({
+  page,
+}) => {
+  await page.goto('/')
+  await expect(page.locator('#city option')).toHaveCount(mockOptions.cities.length + 1)
+  await expect(page.locator('#event-form input, #event-form select')).toHaveCount(7)
+  await expect(page.locator('#event-form textarea')).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Подрядчикам' })).toHaveCount(0)
+  await expect(page.getByRole('link', { name: 'Администратору' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Подобрать подрядчиков' })).toBeVisible()
 })
