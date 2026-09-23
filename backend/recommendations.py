@@ -58,4 +58,3 @@ def make_card(row, query, explanation):
                 available_on=query.date, description=row.description,
                 explanation=explanation[0], evidence=explanation[1],
                 synthetic=row.synthetic, price_imputed=row.price_imputed, city_imputed=row.city_imputed)
-
