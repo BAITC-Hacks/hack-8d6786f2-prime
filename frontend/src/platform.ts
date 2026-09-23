@@ -128,6 +128,9 @@ export const profileSchema = applicationSchema.omit({ contact_email: true }).ext
   categories: z.array(z.string()),
   event_formats: z.array(z.string()),
   languages: z.array(z.string()),
+  price_from_kzt: z.number().int().positive(),
+  max_hours: z.number().positive().nullable(),
+  busy_dates: z.array(z.iso.date()),
   contact_email: z.string().nullable(),
   id: z.string(),
   status: z.enum(['pending', 'approved', 'rejected']),
@@ -179,6 +182,7 @@ async function request<T>(
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
     const response = await fetch(path, {
+      cache: 'no-store',
       method: init.method || 'GET',
       headers: {
         Accept: 'application/json',

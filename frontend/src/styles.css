@@ -1724,6 +1724,7 @@ footer {
   align-items: start;
 }
 .application-guide {
+  --muted: #59674f;
   padding: 26px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1922,6 +1923,7 @@ footer {
   accent-color: var(--green);
   width: 16px;
   height: 16px;
+  min-height: 16px;
   flex-shrink: 0;
   margin: 0;
 }
@@ -2139,6 +2141,21 @@ footer {
   font-size: 10px;
   color: var(--muted);
   overflow-wrap: anywhere;
+}
+.profile-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: #52654b;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.profile-row-meta > span + span {
+  border-left: 1px solid #b8c7a9;
+  padding-left: 10px;
+}
+.profile-row:focus-visible {
+  outline-offset: -4px;
 }
 .status-pill {
   display: inline-block;

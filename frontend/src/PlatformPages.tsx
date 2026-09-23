@@ -30,6 +30,11 @@ import {
 } from './platform'
 
 export const statusLabels = { pending: 'На проверке', approved: 'Одобрена', rejected: 'Отклонена' }
+const sourceLabels = {
+  dataset: 'Исходный каталог',
+  application: 'Публичная анкета',
+  admin: 'Администратор',
+}
 function FormField({
   name,
   label,
@@ -64,10 +69,12 @@ export function ContractorForm({
   options,
   onSubmit,
   direct = false,
+  disabled = false,
 }: {
   options: Options
   onSubmit: (payload: Application) => Promise<void>
   direct?: boolean
+  disabled?: boolean
 }) {
   const [form, setForm] = useState<ApplicationForm>(blankApplication)
   const [errors, setErrors] = useState<ApplicationErrors>({})
@@ -118,7 +125,7 @@ export function ContractorForm({
   }
   const submit = async (e: FormEvent) => {
     e.preventDefault()
-    if (locked.current) return
+    if (locked.current || disabled) return
     const next = validateApplication(form, options)
     setErrors(next)
     setError('')
@@ -218,7 +225,7 @@ export function ContractorForm({
       noValidate
       className="application-form"
     >
-      <fieldset disabled={busy} className="application-fields">
+      <fieldset disabled={busy || disabled} className="application-fields">
         <legend className="sr-only">Данные подрядчика</legend>
         <div className="form-section-title">
           <span>01</span>
@@ -547,6 +554,7 @@ export function AdminPage({
   const [offset, setOffset] = useState(0)
   const [selected, setSelected] = useState<Profile | null>(null)
   const [note, setNote] = useState('')
+  const [noteError, setNoteError] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
@@ -556,12 +564,22 @@ export function AdminPage({
   const active = useRef<AbortController | null>(null)
   const lock = useRef(false)
   const deleteDialog = useRef<HTMLDialogElement>(null)
-  useEffect(() => () => active.current?.abort(), [])
+  const detailTitle = useRef<HTMLHeadingElement>(null)
+  const session = useRef(0)
+  useEffect(
+    () => () => {
+      session.current++
+      active.current?.abort()
+      active.current = null
+    },
+    [],
+  )
   useEffect(() => {
     if (confirmDelete) deleteDialog.current?.showModal()
     else deleteDialog.current?.close()
   }, [confirmDelete])
   const logout = () => {
+    session.current++
     active.current?.abort()
     active.current = null
     lock.current = false
@@ -569,6 +587,9 @@ export function AdminPage({
     setTokenInput('')
     setList(null)
     setSelected(null)
+    setNote('')
+    setNoteError('')
+    setRevisionConflict(false)
     setConfirmDelete(null)
     setAdding(false)
     setBusy(false)
@@ -582,7 +603,7 @@ export function AdminPage({
       failure instanceof PlatformError
         ? failure
         : new PlatformError('Не удалось выполнить действие. Повторите попытку.')
-    if (problem.status === 401) {
+    if (problem.status === 401 || problem.status === 403) {
       logout()
       setNotice('')
     }
@@ -597,6 +618,8 @@ export function AdminPage({
     active.current = new AbortController()
     return active.current
   }
+  const isCurrent = (controller: AbortController) =>
+    active.current === controller && !controller.signal.aborted
   const finish = (controller: AbortController) => {
     if (active.current === controller) {
       lock.current = false
@@ -613,20 +636,27 @@ export function AdminPage({
     if (lock.current) return
     const controller = begin()
     try {
-      const result = await platformApi.list(nextToken, nextFilter, nextOffset, controller.signal)
-      if (controller.signal.aborted) return
+      let result = await platformApi.list(nextToken, nextFilter, nextOffset, controller.signal)
+      if (!isCurrent(controller)) return
+      if (nextOffset > 0 && result.items.length === 0) {
+        const lastOffset =
+          result.total > 0 ? Math.floor((result.total - 1) / result.limit) * result.limit : 0
+        result = await platformApi.list(nextToken, nextFilter, lastOffset, controller.signal)
+      }
+      if (!isCurrent(controller)) return
       setList(result)
       setFilter(nextFilter)
-      setOffset(nextOffset)
+      setOffset(result.offset)
       setSelected(null)
       setNote('')
+      setNoteError('')
       setRevisionConflict(false)
       if (login) {
         setToken(nextToken)
         setTokenInput('')
       }
     } catch (failure) {
-      if (!controller.signal.aborted) handleFailure(failure)
+      if (isCurrent(controller)) handleFailure(failure)
     } finally {
       finish(controller)
     }
@@ -639,20 +669,21 @@ export function AdminPage({
     const controller = begin()
     try {
       await action(controller)
-      if (controller.signal.aborted) return
+      if (!isCurrent(controller)) return
       setSelected(null)
       setConfirmDelete(null)
       setNote('')
+      setNoteError('')
       setRevisionConflict(false)
       setList(null)
       setNotice(message)
       const result = await platformApi.list(token, filter, 0, controller.signal)
-      if (controller.signal.aborted) return
+      if (!isCurrent(controller)) return
       setList(result)
       setOffset(0)
       setNotice(message)
     } catch (failure) {
-      if (!controller.signal.aborted) {
+      if (isCurrent(controller)) {
         setConfirmDelete(null)
         handleFailure(failure)
       }
@@ -661,9 +692,10 @@ export function AdminPage({
     }
   }
   const moderate = (decision: 'approved' | 'rejected') => {
-    if (!selected) return
+    if (!selected || revisionConflict || lock.current) return
     if (decision === 'rejected' && note.trim().length < 3) {
       setError('Укажите причину отклонения: не меньше 3 символов.')
+      setNoteError('Для отклонения нужна причина от 3 до 500 символов.')
       document.getElementById('moderation-note')?.focus()
       return
     }
@@ -710,6 +742,8 @@ export function AdminPage({
                 id="admin-token"
                 type="password"
                 autoComplete="off"
+                maxLength={512}
+                spellCheck={false}
                 value={tokenInput}
                 onChange={(e) => setTokenInput(e.target.value)}
                 required
@@ -800,18 +834,23 @@ export function AdminPage({
                 <ContractorForm
                   options={options}
                   direct
+                  disabled={busy}
                   onSubmit={async (payload) => {
                     if (lock.current) return
                     const controller = begin()
                     try {
                       await platformApi.add(token, payload, controller.signal)
                     } catch (failure) {
-                      if (failure instanceof PlatformError && failure.status === 401)
+                      if (!isCurrent(controller)) return
+                      if (
+                        failure instanceof PlatformError &&
+                        (failure.status === 401 || failure.status === 403)
+                      )
                         handleFailure(failure)
                       finish(controller)
                       throw failure
                     }
-                    if (controller.signal.aborted) {
+                    if (!isCurrent(controller)) {
                       finish(controller)
                       return
                     }
@@ -820,12 +859,12 @@ export function AdminPage({
                     setNotice('Подрядчик добавлен в каталог.')
                     try {
                       const result = await platformApi.list(token, filter, 0, controller.signal)
-                      if (!controller.signal.aborted) {
+                      if (isCurrent(controller)) {
                         setList(result)
                         setOffset(0)
                       }
                     } catch (failure) {
-                      if (!controller.signal.aborted) handleFailure(failure)
+                      if (isCurrent(controller)) handleFailure(failure)
                     } finally {
                       finish(controller)
                     }
@@ -844,7 +883,7 @@ export function AdminPage({
             >
               <div className="list-heading">
                 <h2 id="profiles-title">
-                  Анкеты <span>{list?.total ?? 0}</span>
+                  Анкеты <span>{list?.total ?? '—'}</span>
                 </h2>
                 {busy && <LoaderCircle className="spin" size={18} aria-label="Обновление" />}
               </div>
@@ -863,7 +902,17 @@ export function AdminPage({
                         onClick={() => {
                           setSelected(profile)
                           setNote(profile.moderation_note)
+                          setNoteError('')
                           setAdding(false)
+                          const currentSession = session.current
+                          const focusOrigin = document.activeElement
+                          requestAnimationFrame(() => {
+                            if (
+                              session.current === currentSession &&
+                              document.activeElement === focusOrigin
+                            )
+                              detailTitle.current?.focus()
+                          })
                         }}
                       >
                         <span className="profile-row-top">
@@ -879,10 +928,27 @@ export function AdminPage({
                           <small>{profile.id}</small>
                           <b>от {formatMoney(profile.price_from_kzt)}</b>
                         </span>
+                        <span className="profile-row-meta">
+                          <span>{sourceLabels[profile.source]}</span>
+                          {profile.synthetic && <span>Вымышленный профиль</span>}
+                          {(profile.price_imputed || profile.city_imputed) && (
+                            <span>Данные дополнены</span>
+                          )}
+                        </span>
                       </button>
                     </li>
                   ))}
                 </ul>
+              ) : !list ? (
+                <div className="list-empty" role="status">
+                  {busy ? <LoaderCircle className="spin" /> : <ClipboardList />}
+                  <h3>{busy ? 'Загружаем анкеты' : 'Список не загружен'}</h3>
+                  <p>
+                    {busy
+                      ? 'Получаем актуальные данные каталога.'
+                      : 'Нажмите «Обновить список», чтобы получить актуальные данные.'}
+                  </p>
+                </div>
               ) : (
                 <div className="list-empty">
                   <ClipboardList />
@@ -925,7 +991,9 @@ export function AdminPage({
                       {selected.id} · версия {selected.revision}
                     </span>
                   </div>
-                  <h2>{selected.name}</h2>
+                  <h2 ref={detailTitle} tabIndex={-1}>
+                    {selected.name}
+                  </h2>
                   <p className="detail-description">{selected.description}</p>
                   <dl>
                     <dt>Город</dt>
@@ -947,15 +1015,7 @@ export function AdminPage({
                     <dt>Контактный email</dt>
                     <dd>{selected.contact_email || 'Не указан в исходном каталоге'}</dd>
                     <dt>Источник</dt>
-                    <dd>
-                      {
-                        {
-                          dataset: 'Исходный каталог',
-                          application: 'Публичная анкета',
-                          admin: 'Администратор',
-                        }[selected.source]
-                      }
-                    </dd>
+                    <dd>{sourceLabels[selected.source]}</dd>
                     <dt>Создана</dt>
                     <dd>{new Date(selected.created_at).toLocaleString('ru-RU')}</dd>
                     <dt>Обновлена</dt>
@@ -982,13 +1042,26 @@ export function AdminPage({
                         rows={3}
                         maxLength={500}
                         value={note}
-                        onChange={(e) => setNote(e.target.value)}
+                        onChange={(e) => {
+                          setNote(e.target.value)
+                          setNoteError('')
+                        }}
                         disabled={busy || revisionConflict}
-                        aria-describedby="moderation-note-hint"
+                        aria-invalid={Boolean(noteError)}
+                        aria-describedby={
+                          noteError
+                            ? 'moderation-note-hint moderation-note-error'
+                            : 'moderation-note-hint'
+                        }
                       />
                       <span id="moderation-note-hint" className="field-hint">
                         Для отклонения обязательна причина от 3 до 500 символов.
                       </span>
+                      {noteError && (
+                        <span className="field-error" id="moderation-note-error">
+                          {noteError}
+                        </span>
+                      )}
                     </div>
                     <div className="moderation-actions">
                       <button
@@ -1035,10 +1108,14 @@ export function AdminPage({
         ref={deleteDialog}
         className="how-dialog delete-dialog"
         aria-labelledby="delete-title"
-        onCancel={() => setConfirmDelete(null)}
+        aria-describedby="delete-description"
+        onCancel={(event) => {
+          if (busy) event.preventDefault()
+          else setConfirmDelete(null)
+        }}
       >
         <h2 id="delete-title">Удалить анкету?</h2>
-        <p>
+        <p id="delete-description">
           «{confirmDelete?.name}» будет удалена из каталога вместе с данными анкеты. Это действие
           нельзя отменить.
         </p>
