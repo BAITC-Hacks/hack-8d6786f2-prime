@@ -8,6 +8,7 @@ import pytest
 from backend.evidence import excerpts
 from backend.explainer import Explainer, Settings
 from backend.tests.test_explainer import context, provider_choices
+from backend.recommender import select
 
 
 def modified_bands():
@@ -58,6 +59,33 @@ def test_provider_cannot_reintroduce_a_real_but_rejected_advertising_excerpt():
     assert mode == "fallback" and not engine.cache
     assert "саксофон и тромбон" in result["renamed-a"][0]
     assert "струнный квартет и перкуссионист" in result["renamed-b"][0]
+
+
+def test_group_quality_guard_repairs_a_valid_but_less_distinct_venue_quote():
+    catalog, query, _ = context()
+    query = query.model_copy(update={"date": __import__('datetime').date(2026, 9, 23), "category": "Банкетный зал",
+                                     "event_type": "свадьба", "budget_kzt": 10000000, "language": None, "duration_hours": None})
+    items = select(catalog, query).eligible[:3]
+
+    def handler(request):
+        payload = json.loads(json.loads(request.content)["messages"][1]["content"])
+        response = provider_choices(request)
+        row = next(row for row in payload["candidates"] if row["id"] == "HK-69010")
+        weaker = next(snippet for snippet in row["snippets"] if "Локация сочетает" in snippet["text"])
+        next(choice for choice in response["items"] if choice["id"] == row["id"])["snippet_index"] = weaker["index"]
+        return httpx.Response(200, json={"choices": [{"message": {"content": json.dumps(response)}}]})
+
+    async def run():
+        engine = Explainer(Settings(api_key="test"), httpx.MockTransport(handler))
+        diagnostics = {}
+        result, mode = await engine.explain(items, query, catalog.version, diagnostics=diagnostics)
+        assert mode == "llm" and diagnostics["quality_repaired"]
+        assert "террасе" in result["HK-69010"][0] and "кухней" in result["HK-69010"][0]
+        cached, _ = await engine.explain(items, query, catalog.version, diagnostics=diagnostics)
+        assert cached == result and diagnostics["cache_hit"] and diagnostics["quality_repaired"]
+        await engine.aclose()
+
+    asyncio.run(run())
 
 
 def test_long_sentence_and_decimal_quantities_are_not_cut():

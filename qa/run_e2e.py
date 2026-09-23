@@ -50,8 +50,9 @@ def main():
     node = shutil.which("node")
     if not node:
         raise SystemExit("Node.js is required on PATH")
-    output = ROOT / "qa" / "artifacts"
-    output.mkdir(exist_ok=True)
+    # Playwright clears its output directory; do not erase evaluation/load reports.
+    output = ROOT / "qa" / "artifacts" / "browser"
+    output.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="recommendation-e2e-") as directory:
         temporary = Path(directory)
         with isolated_server(temporary / "catalog.sqlite3") as api:

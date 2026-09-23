@@ -1791,3 +1791,32 @@ footer {
     max-width: calc(100% - 34px);
   }
 }
+/* Reasons apply to successful results as well as empty selections. */
+.selection-policy {
+  color: var(--muted, #52665e);
+  font-size: 0.85rem;
+  line-height: 1.6;
+  margin: 12px 0 20px;
+}
+.date-comparison {
+  background: #f0f5f0;
+  border: 1px solid #d3dfd5;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 22px;
+}
+.date-comparison h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+}
+.date-comparison p,
+.date-comparison li {
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+.date-comparison ul {
+  padding-left: 20px;
+}
+.date-comparison li + li {
+  margin-top: 8px;
+}

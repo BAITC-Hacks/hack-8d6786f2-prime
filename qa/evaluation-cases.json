@@ -1,0 +1,555 @@
+{
+  "dataset_version": "45a1c8b682ee9398807450da13b6a661dc30179a06079071c9a9119ae2ceba19",
+  "cases": [
+    {
+      "id": "category-01",
+      "purpose": "Банкетный зал",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Банкетный зал",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-50695",
+          "HK-58236",
+          "HK-69010"
+        ]
+      }
+    },
+    {
+      "id": "category-02",
+      "purpose": "Ведущий",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Ведущий",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-44923",
+          "HK-42352",
+          "HK-27222"
+        ]
+      }
+    },
+    {
+      "id": "category-03",
+      "purpose": "Ведущий церемонии",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Ведущий церемонии",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-90007"
+        ]
+      }
+    },
+    {
+      "id": "category-04",
+      "purpose": "Видеограф",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Видеограф",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-62242"
+        ]
+      }
+    },
+    {
+      "id": "category-05",
+      "purpose": "Декоратор",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Декоратор",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-11484",
+          "HK-90004"
+        ]
+      }
+    },
+    {
+      "id": "category-06",
+      "purpose": "Загородная площадка",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Загородная площадка",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-58236",
+          "HK-69010"
+        ]
+      }
+    },
+    {
+      "id": "category-07",
+      "purpose": "Инструменталист",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Инструменталист",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-46450",
+          "HK-90013",
+          "HK-74147"
+        ]
+      }
+    },
+    {
+      "id": "category-08",
+      "purpose": "Лайв-бэнд",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Лайв-бэнд",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-23752",
+          "HK-83709",
+          "HK-57480"
+        ]
+      }
+    },
+    {
+      "id": "category-09",
+      "purpose": "Национальный ансамбль",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Национальный ансамбль",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-19103",
+          "HK-92824"
+        ]
+      }
+    },
+    {
+      "id": "category-10",
+      "purpose": "Отель",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Отель",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "no_match",
+        "cards": []
+      }
+    },
+    {
+      "id": "category-11",
+      "purpose": "Подарки и сувениры",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Подарки и сувениры",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-90005",
+          "HK-60927"
+        ]
+      }
+    },
+    {
+      "id": "category-12",
+      "purpose": "Ресторан",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Ресторан",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-50695",
+          "HK-58236",
+          "HK-69010"
+        ]
+      }
+    },
+    {
+      "id": "category-13",
+      "purpose": "Танцевальный коллектив",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Танцевальный коллектив",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-19103",
+          "HK-92824"
+        ]
+      }
+    },
+    {
+      "id": "category-14",
+      "purpose": "Флорист",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Флорист",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-39372",
+          "HK-90001"
+        ]
+      }
+    },
+    {
+      "id": "category-15",
+      "purpose": "Фото и видеобудки",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Фото и видеобудки",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-90009"
+        ]
+      }
+    },
+    {
+      "id": "category-16",
+      "purpose": "Фотограф",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Фотограф",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-68220",
+          "HK-91112",
+          "HK-16628"
+        ]
+      }
+    },
+    {
+      "id": "category-17",
+      "purpose": "Шоу-программа",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Шоу-программа",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-19103",
+          "HK-92824"
+        ]
+      }
+    },
+    {
+      "id": "bands-december",
+      "purpose": "Равная цена и разные составы, декабрь",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-12-25",
+        "event_type": "свадьба",
+        "category": "Лайв-бэнд",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-23752",
+          "HK-83709"
+        ]
+      }
+    },
+    {
+      "id": "bands-alternatives",
+      "purpose": "Отдельные альтернативы при нехватке бюджета",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Лайв-бэнд",
+        "budget_kzt": 1100000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "no_match",
+        "cards": []
+      }
+    },
+    {
+      "id": "hosts-nov14",
+      "purpose": "До смены даты: занятость и граница тройки",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-11-14",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-44923",
+          "HK-29829",
+          "HK-27222"
+        ]
+      }
+    },
+    {
+      "id": "hosts-nov15",
+      "purpose": "После смены даты при тех же остальных условиях",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-11-15",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 1500000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-88430",
+          "HK-44923",
+          "HK-35215"
+        ]
+      }
+    },
+    {
+      "id": "hosts-no-match",
+      "purpose": "Нет точных совпадений: альтернативы",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-11-14",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 600000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "expected": {
+        "status": "no_match",
+        "cards": []
+      }
+    },
+    {
+      "id": "hosts-now-free",
+      "purpose": "Смена даты no_match → matched",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-11-15",
+        "event_type": "корпоратив",
+        "category": "Ведущий",
+        "budget_kzt": 600000,
+        "duration_hours": 6,
+        "language": "русский"
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-88430"
+        ]
+      }
+    },
+    {
+      "id": "wedding-experience",
+      "purpose": "Полный факт об опыте HK-42352",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Ведущий",
+        "budget_kzt": 10000000,
+        "duration_hours": 10,
+        "language": "казахский"
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-42352",
+          "HK-27222"
+        ]
+      }
+    },
+    {
+      "id": "florist-null-duration",
+      "purpose": "Редкая категория и неприменимая длительность",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-11-14",
+        "event_type": "свадьба",
+        "category": "Флорист",
+        "budget_kzt": 300000,
+        "duration_hours": 100,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-90001"
+        ]
+      }
+    },
+    {
+      "id": "absent-city-category",
+      "purpose": "Категории нет в городе",
+      "query": {
+        "city": "Астана",
+        "date": "2026-09-23",
+        "event_type": "свадьба",
+        "category": "Декоратор",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "no_category",
+        "cards": []
+      }
+    },
+    {
+      "id": "venue-december",
+      "purpose": "Площадка, декабрь и формат конференции",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-12-25",
+        "event_type": "конференция",
+        "category": "Банкетный зал",
+        "budget_kzt": 10000000,
+        "duration_hours": 8,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-72785"
+        ]
+      }
+    },
+    {
+      "id": "venue-next-date",
+      "purpose": "Календарь площадок на следующую дату",
+      "query": {
+        "city": "Алматы",
+        "date": "2026-09-24",
+        "event_type": "свадьба",
+        "category": "Банкетный зал",
+        "budget_kzt": 10000000,
+        "duration_hours": null,
+        "language": null
+      },
+      "expected": {
+        "status": "matched",
+        "cards": [
+          "HK-58236",
+          "HK-69010"
+        ]
+      }
+    }
+  ]
+}

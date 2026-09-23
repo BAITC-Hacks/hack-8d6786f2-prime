@@ -1,43 +1,19 @@
+import { fillForm, searchAndRead, type FormOverrides } from './form'
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
+import { recommendationSchema } from '../src/contracts'
+import evaluation from '../../qa/evaluation-cases.json' with { type: 'json' }
 
 test.skip(
   process.env.RUN_BACKEND_TESTS !== '1',
   'Requires the real backend running at 127.0.0.1:8000',
 )
 
-async function fillRealForm(
-  page: Page,
-  overrides: {
-    city?: string
-    date?: string
-    category?: string
-    event?: string
-    budget?: string
-    language?: string
-    duration?: string
-  } = {},
-) {
+async function fillRealForm(page: Page, overrides: FormOverrides = {}) {
   await page.goto('/')
-  await page.getByLabel('Город', { exact: true }).selectOption(overrides.city ?? 'Алматы')
-  await page.getByLabel('Дата', { exact: true }).fill(overrides.date ?? '2026-11-14')
-  await page
-    .getByLabel('Тип мероприятия', { exact: true })
-    .selectOption(overrides.event ?? 'корпоратив')
-  await page.getByLabel('Категория', { exact: true }).selectOption(overrides.category ?? 'Ведущий')
-  await page.getByLabel('Бюджет до', { exact: true }).fill(overrides.budget ?? '1500000')
-  await page.getByLabel('Язык', { exact: true }).selectOption(overrides.language ?? 'русский')
-  await page.getByLabel('Длительность, ч', { exact: true }).fill(overrides.duration ?? '6')
+  await fillForm(page, { language: 'русский', duration: '6', ...overrides })
 }
-async function recommend(page: Page) {
-  const pending = page.waitForResponse(
-    (r) => r.url().endsWith('/api/recommend') && r.request().method() === 'POST',
-  )
-  await page.getByRole('button', { name: 'Подобрать подрядчиков', exact: true }).click()
-  const response = await pending
-  expect(response.status()).toBe(200)
-  return response.json()
-}
+const recommend = searchAndRead
 test('real API options, ranked matches, fallback, desktop and mobile', async ({
   page,
   request,
@@ -75,7 +51,7 @@ test('real no_match suggestion changes date and then returns one candidate', asy
   const initial = await recommend(page)
   expect(initial.status).toBe('no_match')
   const dateChange = initial.suggestions[0].changes.date
-  const dateAlternative = initial.alternatives.find(
+  const dateAlternative = initial.alternatives?.find(
     (alternative: { changes: Record<string, unknown> }) =>
       Object.keys(alternative.changes).length === 1 && alternative.changes.date === dateChange,
   )
@@ -132,7 +108,8 @@ test('real source explanations distinguish bands and keep the wedding fact compl
     ['HK-83709', 'струнный квартет'],
   ]) {
     const card = bands.cards.find((item: { id: string }) => item.id === id)
-    await expect(page.getByRole('article', { name: card.name, exact: true })).toContainText(fact)
+    expect(card).toBeDefined()
+    await expect(page.getByRole('article', { name: card!.name, exact: true })).toContainText(fact)
   }
   await page.setViewportSize({ width: 390, height: 844 })
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -149,7 +126,48 @@ test('real source explanations distinguish bands and keep the wedding fact compl
   })
   const hosts = await recommend(page)
   const host = hosts.cards.find((item: { id: string }) => item.id === 'HK-42352')
-  const card = page.getByRole('article', { name: host.name, exact: true })
+  const card = page.getByRole('article', { name: host!.name, exact: true })
   await expect(card.locator('blockquote')).toHaveText('Опыт ведения свадеб 13 лет')
   await expect(card.locator('.explanation')).not.toContainText('чтобы этот')
+})
+
+test('real date change distinguishes newly busy, newly free and rank cutoff', async ({ page }) => {
+  await fillRealForm(page)
+  const before = await recommend(page)
+  await page.getByLabel('Дата', { exact: true }).fill('2026-11-15')
+  const after = await recommend(page)
+  const comparison = page.getByRole('region', { name: 'Что изменилось при смене даты' })
+  await expect(comparison).toBeVisible()
+  for (const [id, text] of [
+    ['HK-29829', 'Стал занят'],
+    ['HK-88430', 'На прежнюю дату был занят'],
+    ['HK-27222', 'По-прежнему свободен'],
+  ]) {
+    const name = [...before.assessments, ...after.assessments].find((row) => row.id === id)!.name
+    await expect(comparison.getByRole('listitem').filter({ hasText: name })).toContainText(text)
+  }
+  await expect(page.getByText('Заняты на дату: 2', { exact: true })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.screenshot({
+    path: 'test-results/screenshots/date-comparison-mobile.png',
+    fullPage: true,
+  })
+  await page.getByLabel('Бюджет до', { exact: true }).fill('2000000')
+  await recommend(page)
+  await expect(comparison).toHaveCount(0)
+})
+
+test('all 28 evaluation responses satisfy the browser runtime schema and expected outcome', async ({
+  request,
+}) => {
+  for (const item of evaluation.cases) {
+    const response = await request.post('/api/recommend', { data: item.query })
+    expect(response.status(), item.id).toBe(200)
+    const result = recommendationSchema.parse(await response.json())
+    expect(result.meta.dataset_version).toBe(evaluation.dataset_version)
+    expect({ status: result.status, cards: result.cards.map((row) => row.id) }, item.id).toEqual(
+      item.expected,
+    )
+  }
 })

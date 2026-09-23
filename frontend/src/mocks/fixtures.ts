@@ -1,4 +1,5 @@
 import type { Options, Query, Recommendation, Contractor } from '../contracts'
+import { recommendationSchema } from '../contracts'
 
 export const mockOptions: Options = {
   cities: ['Алматы', 'Астана', 'Зарубежье'],
@@ -68,11 +69,22 @@ export function makeMockResponse(
 ): Recommendation {
   const empty = scenario === 'no_category' || scenario === 'no_match'
   const cards = empty ? [] : mockCards.slice(0, scenario === 'one' ? 1 : scenario === 'two' ? 2 : 3)
-  return {
+  const total = scenario === 'no_category' ? 0 : 10
+  const eligible = empty ? 0 : cards.length === 3 ? 4 : cards.length
+  const assessments: Recommendation['assessments'] = Array.from({ length: total }, (_, index) => ({
+    id: mockCards[index]?.id ?? `demo-${index + 1}`,
+    name: mockCards[index]?.name ?? `Профиль ${index + 1}`,
+    rank: index < eligible ? index + 1 : null,
+    status:
+      index < Math.min(3, eligible) ? 'selected' : index < eligible ? 'not_selected' : 'excluded',
+    reasons: index < eligible ? [] : scenario === 'no_match' && index < 2 ? ['busy'] : ['budget'],
+  }))
+  return recommendationSchema.parse({
     status: empty ? scenario : 'matched',
     query,
-    total_in_category: scenario === 'no_category' ? 0 : 10,
-    eligible_count: empty ? 0 : cards.length === 3 ? 4 : cards.length,
+    total_in_category: total,
+    eligible_count: eligible,
+    assessments,
     cards: cards.map((card) => ({ ...card, available_on: query.date })),
     summary:
       scenario === 'no_category'
@@ -83,8 +95,8 @@ export function makeMockResponse(
             ? 'Найдено 4 подходящих подрядчика. Показываем 3.'
             : 'Подходящих подрядчиков: ' + cards.length + '. Показываем всех.',
     rejections: {
-      busy: empty ? 2 : 0,
-      budget: empty ? 3 : 0,
+      busy: scenario === 'no_match' ? 2 : 0,
+      budget: total - eligible - (scenario === 'no_match' ? 2 : 0),
       event_type: 0,
       language: 0,
       duration: 0,
@@ -98,5 +110,5 @@ export function makeMockResponse(
       explanation_mode: scenario === 'fallback' ? 'fallback' : 'llm',
       latency_ms: 680,
     },
-  }
+  })
 }

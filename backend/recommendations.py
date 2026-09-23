@@ -1,12 +1,10 @@
 """Recommendation orchestration, independent of HTTP and application startup."""
 import time
 
-from anyio import to_thread
-
 from .catalog import CALENDAR_MAX, CALENDAR_MIN
 from .explainer import compose, excerpts, fallback_choice
-from .models import Alternative, Card, Meta, Recommendation
-from .recommender import alternatives, nearby_candidates, select
+from .models import Alternative, Assessment, Card, Meta, Recommendation
+from .recommender import alternatives, nearby_candidates, rejection_reasons, select
 
 
 class InvalidQuery(Exception):
@@ -16,7 +14,7 @@ class InvalidQuery(Exception):
 
 async def recommend(store, explainer, query):
     started = time.perf_counter()
-    catalog = await to_thread.run_sync(store.snapshot)
+    catalog = store.snapshot()
     errors = []
     if not CALENDAR_MIN <= query.date <= CALENDAR_MAX:
         errors.append({"loc": ["body", "date"], "msg": "Календарь доступен с 23.09.2026 по 31.12.2026", "type": "value_error"})
@@ -29,7 +27,8 @@ async def recommend(store, explainer, query):
         raise InvalidQuery(errors)
     selection = select(catalog, query)
     top = selection.eligible[:3]
-    explanations, mode = await explainer.explain(top, query, catalog.version)
+    diagnostics = {}
+    explanations, mode = await explainer.explain(top, query, catalog.version, diagnostics=diagnostics)
     cards = [make_card(row, query, explanations[row.id]) for row in top]
     near = []
     nearby = nearby_candidates(query, selection)
@@ -38,13 +37,18 @@ async def recommend(store, explainer, query):
         grounded = compose(row, proposed, fallback_choice(row, proposed, snippets,
                            [candidate[0] for candidate in nearby]), snippets)
         near.append(Alternative(card=make_card(row, proposed, grounded), changes=changes, differences=differences))
+    ranks = {row.id: index + 1 for index, row in enumerate(selection.eligible)}
+    assessments = [Assessment(id=row.id, name=row.name, rank=ranks.get(row.id),
+                              status="selected" if row.id in ranks and ranks[row.id] <= 3 else
+                                     "not_selected" if row.id in ranks else "excluded",
+                              reasons=rejection_reasons(row, query)) for row in selection.base]
     return Recommendation(status=selection.status, query=query,
                           total_in_category=len(selection.base), eligible_count=len(selection.eligible),
                           cards=cards, summary=selection.summary, rejections=selection.rejections,
                           suggestions=alternatives(catalog, query, selection),
-                          alternatives=near,
+                          alternatives=near, assessments=assessments,
                           meta=Meta(dataset_version=catalog.version, explanation_mode=mode,
-                                    latency_ms=round((time.perf_counter() - started) * 1000)))
+                                    ai=diagnostics, latency_ms=round((time.perf_counter() - started) * 1000)))
 
 
 def make_card(row, query, explanation):

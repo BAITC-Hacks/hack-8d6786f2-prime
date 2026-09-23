@@ -1,3 +1,4 @@
+import { fillForm } from './form'
 import { test, expect } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
 
@@ -7,13 +8,7 @@ test('alternatives remain separate, display changes and require a second explici
   page,
 }) => {
   await page.goto('/')
-  await page.getByLabel('Город', { exact: true }).selectOption('Алматы')
-  await page.getByLabel('Дата', { exact: true }).fill('2026-11-14')
-  await page.getByLabel('Тип мероприятия', { exact: true }).selectOption('корпоратив')
-  await page.getByLabel('Категория', { exact: true }).selectOption('Ведущий')
-  await page.getByLabel('Бюджет до', { exact: true }).fill('600000')
-  await page.getByLabel('Язык', { exact: true }).selectOption('русский')
-  await page.getByLabel('Длительность, ч', { exact: true }).fill('6')
+  await fillForm(page, { budget: '600000', language: 'русский', duration: '6' })
   let count = 0
   page.on('request', (request) => {
     if (request.url().endsWith('/api/recommend')) count++

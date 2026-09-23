@@ -3,6 +3,7 @@ import sqlite3
 from contextlib import closing, contextmanager
 from datetime import date, datetime, timezone
 from pathlib import Path
+from threading import Lock
 
 from .catalog import Catalog, Contractor
 
@@ -58,6 +59,8 @@ class Store:
                     payload = {**vars(record), "busy_dates": sorted(day.isoformat() for day in record.busy_dates)}
                     self._insert(conn, record.id, payload)
                 conn.execute("INSERT INTO metadata(key,value) VALUES ('seed_version',?)", (seed.version,))
+        self._refresh_lock = Lock()
+        self._snapshot = self._read_snapshot()
 
     @contextmanager
     def connection(self, write=False):
@@ -116,6 +119,17 @@ class Store:
         return result
 
     def snapshot(self):
+        """Read-only requests share one version, without SQL or hashing on their path."""
+        return self._snapshot
+
+    def refresh(self):
+        """Explicit atomic reload after a committed local database update; no public write API."""
+        with self._refresh_lock:
+            snapshot = self._read_snapshot()
+            self._snapshot = snapshot
+            return snapshot
+
+    def _read_snapshot(self):
         with self.connection() as conn:
             items = self._hydrate(conn, conn.execute("SELECT id,name,city,price_from_kzt,max_hours,description,synthetic,price_imputed,city_imputed "
                                                      "FROM profiles WHERE status='approved' ORDER BY id").fetchall())

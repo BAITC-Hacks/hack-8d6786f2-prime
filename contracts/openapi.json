@@ -1,0 +1,975 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Подбор подрядчиков",
+    "version": "3.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/options": {
+      "get": {
+        "summary": "Options",
+        "operationId": "options_api_options_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Options"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/recommend": {
+      "post": {
+        "summary": "Recommendations",
+        "operationId": "recommendations_api_recommend_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Query"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/MatchedRecommendation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoMatchRecommendation"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NoCategoryRecommendation"
+                    }
+                  ],
+                  "title": "Response Recommendations Api Recommend Post",
+                  "discriminator": {
+                    "propertyName": "status",
+                    "mapping": {
+                      "matched": "#/components/schemas/MatchedRecommendation",
+                      "no_match": "#/components/schemas/NoMatchRecommendation",
+                      "no_category": "#/components/schemas/NoCategoryRecommendation"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AIDiagnostics": {
+        "properties": {
+          "cache_hit": {
+            "type": "boolean",
+            "title": "Cache Hit",
+            "default": false
+          },
+          "shared_inflight": {
+            "type": "boolean",
+            "title": "Shared Inflight",
+            "default": false
+          },
+          "quality_repaired": {
+            "type": "boolean",
+            "title": "Quality Repaired",
+            "default": false
+          },
+          "fallback_reason": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "no_candidates",
+                  "not_configured",
+                  "circuit_open",
+                  "overloaded",
+                  "rate_limit",
+                  "session_budget",
+                  "timeout",
+                  "provider_http",
+                  "provider_network",
+                  "invalid_response"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fallback Reason"
+          },
+          "elapsed_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Elapsed Ms",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "AIDiagnostics"
+      },
+      "Alternative": {
+        "properties": {
+          "changes": {
+            "$ref": "#/components/schemas/Changes"
+          },
+          "card": {
+            "$ref": "#/components/schemas/Card"
+          },
+          "differences": {
+            "items": {
+              "$ref": "#/components/schemas/Difference"
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Differences"
+          },
+          "explanation_mode": {
+            "type": "string",
+            "const": "fallback",
+            "title": "Explanation Mode",
+            "default": "fallback"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changes",
+          "card",
+          "differences"
+        ],
+        "title": "Alternative"
+      },
+      "Assessment": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "selected",
+              "not_selected",
+              "excluded"
+            ],
+            "title": "Status"
+          },
+          "reasons": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "busy",
+                "budget",
+                "event_type",
+                "language",
+                "duration"
+              ]
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "rank": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rank"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "reasons"
+        ],
+        "title": "Assessment"
+      },
+      "CalendarRange": {
+        "properties": {
+          "min": {
+            "type": "string",
+            "format": "date",
+            "title": "Min"
+          },
+          "max": {
+            "type": "string",
+            "format": "date",
+            "title": "Max"
+          }
+        },
+        "type": "object",
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "CalendarRange"
+      },
+      "Card": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "city": {
+            "type": "string",
+            "title": "City"
+          },
+          "price_from_kzt": {
+            "type": "integer",
+            "title": "Price From Kzt"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "max_hours": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max Hours"
+          },
+          "available_on": {
+            "type": "string",
+            "format": "date",
+            "title": "Available On"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "explanation": {
+            "type": "string",
+            "title": "Explanation"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/Evidence"
+            },
+            "type": "array",
+            "title": "Evidence"
+          },
+          "synthetic": {
+            "type": "boolean",
+            "title": "Synthetic"
+          },
+          "price_imputed": {
+            "type": "boolean",
+            "title": "Price Imputed"
+          },
+          "city_imputed": {
+            "type": "boolean",
+            "title": "City Imputed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "categories",
+          "city",
+          "price_from_kzt",
+          "languages",
+          "max_hours",
+          "available_on",
+          "description",
+          "explanation",
+          "evidence",
+          "synthetic",
+          "price_imputed",
+          "city_imputed"
+        ],
+        "title": "Card"
+      },
+      "Changes": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "title": "Date"
+          },
+          "budget_kzt": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Budget Kzt"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "duration_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Hours"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "Changes"
+      },
+      "DatasetInfo": {
+        "properties": {
+          "version": {
+            "type": "string",
+            "title": "Version"
+          },
+          "profiles_count": {
+            "type": "integer",
+            "title": "Profiles Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "version",
+          "profiles_count"
+        ],
+        "title": "DatasetInfo"
+      },
+      "Difference": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "enum": [
+              "date",
+              "budget_kzt",
+              "language",
+              "duration_hours"
+            ],
+            "title": "Field"
+          },
+          "requested": {
+            "type": "string",
+            "title": "Requested"
+          },
+          "proposed": {
+            "type": "string",
+            "title": "Proposed"
+          },
+          "reason": {
+            "type": "string",
+            "title": "Reason"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "requested",
+          "proposed",
+          "reason"
+        ],
+        "title": "Difference"
+      },
+      "Evidence": {
+        "properties": {
+          "field": {
+            "type": "string",
+            "title": "Field"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "field",
+          "value"
+        ],
+        "title": "Evidence"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status"
+          },
+          "dataset_version": {
+            "type": "string",
+            "title": "Dataset Version"
+          },
+          "ai_available": {
+            "type": "boolean",
+            "title": "Ai Available"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "dataset_version",
+          "ai_available"
+        ],
+        "title": "Health"
+      },
+      "MatchedRecommendation": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "matched",
+            "title": "Status"
+          },
+          "query": {
+            "$ref": "#/components/schemas/Query"
+          },
+          "total_in_category": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Total In Category"
+          },
+          "eligible_count": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Eligible Count"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Cards"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "rejections": {
+            "$ref": "#/components/schemas/Rejections"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/Alternative"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Alternatives"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/Assessment"
+            },
+            "type": "array",
+            "title": "Assessments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "query",
+          "total_in_category",
+          "eligible_count",
+          "cards",
+          "summary",
+          "rejections",
+          "suggestions",
+          "meta",
+          "assessments"
+        ],
+        "title": "MatchedRecommendation"
+      },
+      "Meta": {
+        "properties": {
+          "dataset_version": {
+            "type": "string",
+            "title": "Dataset Version"
+          },
+          "explanation_mode": {
+            "type": "string",
+            "enum": [
+              "llm",
+              "fallback"
+            ],
+            "title": "Explanation Mode"
+          },
+          "latency_ms": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Latency Ms"
+          },
+          "ai": {
+            "$ref": "#/components/schemas/AIDiagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dataset_version",
+          "explanation_mode",
+          "latency_ms"
+        ],
+        "title": "Meta"
+      },
+      "NoCategoryRecommendation": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "no_category",
+            "title": "Status"
+          },
+          "query": {
+            "$ref": "#/components/schemas/Query"
+          },
+          "total_in_category": {
+            "type": "integer",
+            "const": 0,
+            "title": "Total In Category"
+          },
+          "eligible_count": {
+            "type": "integer",
+            "const": 0,
+            "title": "Eligible Count"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "type": "array",
+            "maxItems": 0,
+            "title": "Cards"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "rejections": {
+            "$ref": "#/components/schemas/Rejections"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/Alternative"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Alternatives"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/Assessment"
+            },
+            "type": "array",
+            "title": "Assessments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "query",
+          "total_in_category",
+          "eligible_count",
+          "cards",
+          "summary",
+          "rejections",
+          "suggestions",
+          "meta",
+          "assessments"
+        ],
+        "title": "NoCategoryRecommendation"
+      },
+      "NoMatchRecommendation": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "no_match",
+            "title": "Status"
+          },
+          "query": {
+            "$ref": "#/components/schemas/Query"
+          },
+          "total_in_category": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Total In Category"
+          },
+          "eligible_count": {
+            "type": "integer",
+            "const": 0,
+            "title": "Eligible Count"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "type": "array",
+            "maxItems": 0,
+            "title": "Cards"
+          },
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          },
+          "rejections": {
+            "$ref": "#/components/schemas/Rejections"
+          },
+          "suggestions": {
+            "items": {
+              "$ref": "#/components/schemas/Suggestion"
+            },
+            "type": "array",
+            "title": "Suggestions"
+          },
+          "meta": {
+            "$ref": "#/components/schemas/Meta"
+          },
+          "alternatives": {
+            "items": {
+              "$ref": "#/components/schemas/Alternative"
+            },
+            "type": "array",
+            "maxItems": 3,
+            "title": "Alternatives"
+          },
+          "assessments": {
+            "items": {
+              "$ref": "#/components/schemas/Assessment"
+            },
+            "type": "array",
+            "title": "Assessments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "query",
+          "total_in_category",
+          "eligible_count",
+          "cards",
+          "summary",
+          "rejections",
+          "suggestions",
+          "meta",
+          "assessments"
+        ],
+        "title": "NoMatchRecommendation"
+      },
+      "Options": {
+        "properties": {
+          "cities": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cities"
+          },
+          "categories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Categories"
+          },
+          "event_types": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Types"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Languages"
+          },
+          "calendar": {
+            "$ref": "#/components/schemas/CalendarRange"
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/DatasetInfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cities",
+          "categories",
+          "event_types",
+          "languages",
+          "calendar",
+          "dataset"
+        ],
+        "title": "Options"
+      },
+      "Query": {
+        "properties": {
+          "city": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "City"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "event_type": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Event Type"
+          },
+          "category": {
+            "type": "string",
+            "maxLength": 80,
+            "minLength": 1,
+            "title": "Category"
+          },
+          "budget_kzt": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Budget Kzt"
+          },
+          "duration_hours": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Duration Hours"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80,
+                "minLength": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "city",
+          "date",
+          "event_type",
+          "category",
+          "budget_kzt"
+        ],
+        "title": "Query"
+      },
+      "Rejections": {
+        "properties": {
+          "busy": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Busy",
+            "default": 0
+          },
+          "budget": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Budget",
+            "default": 0
+          },
+          "event_type": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Event Type",
+            "default": 0
+          },
+          "language": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Language",
+            "default": 0
+          },
+          "duration": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Duration",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "Rejections"
+      },
+      "Suggestion": {
+        "properties": {
+          "changes": {
+            "$ref": "#/components/schemas/Changes"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          }
+        },
+        "type": "object",
+        "required": [
+          "changes",
+          "label"
+        ],
+        "title": "Suggestion"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

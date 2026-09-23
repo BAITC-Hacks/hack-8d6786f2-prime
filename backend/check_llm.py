@@ -23,9 +23,14 @@ async def check() -> int:
                   budget_kzt=1500000, duration_hours=6, language="русский")
     selected = select(catalog, query).eligible[:3]
     started = time.perf_counter()
-    explanations, mode = await Explainer(settings).explain(selected, query, catalog.version)
+    engine = Explainer(settings)
+    diagnostics = {}
+    try:
+        explanations, mode = await engine.explain(selected, query, catalog.version, diagnostics=diagnostics)
+    finally:
+        await engine.aclose()
     print(json.dumps({"ok": mode == "llm", "provider": settings.provider,
-                      "explanation_mode": mode, "latency_ms": round((time.perf_counter() - started) * 1000),
+                      "explanation_mode": mode, "ai": diagnostics, "latency_ms": round((time.perf_counter() - started) * 1000),
                       "cards": [{"id": row.id, "explanation": explanations[row.id][0]} for row in selected]}, ensure_ascii=False, indent=2))
     return 0 if mode == "llm" else 1
 

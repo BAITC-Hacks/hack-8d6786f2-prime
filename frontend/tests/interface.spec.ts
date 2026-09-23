@@ -1,12 +1,7 @@
+import { fillForm } from './form'
 import { test, expect, type Page } from '@playwright/test'
 import AxeBuilder from '@axe-core/playwright'
-import {
-  makeMockResponse,
-  mockCards,
-  mockOptions,
-  mockQuery,
-  type Scenario,
-} from '../src/mocks/fixtures'
+import { makeMockResponse, mockOptions, mockQuery, type Scenario } from '../src/mocks/fixtures'
 
 async function prepare(page: Page, scenario: Scenario = 'matched') {
   await page.route('**/api/options', (route) => route.fulfill({ json: mockOptions }))
@@ -15,13 +10,7 @@ async function prepare(page: Page, scenario: Scenario = 'matched') {
   )
   await page.goto('/')
 }
-async function fill(page: Page) {
-  await page.getByLabel('Город', { exact: true }).selectOption('Алматы')
-  await page.getByLabel('Дата', { exact: true }).fill('2026-11-14')
-  await page.getByLabel('Тип мероприятия', { exact: true }).selectOption('корпоратив')
-  await page.getByLabel('Категория', { exact: true }).selectOption('Ведущий')
-  await page.getByLabel('Бюджет до', { exact: true }).fill('1500000')
-}
+const fill = fillForm
 async function search(page: Page) {
   await fill(page)
   await page.getByRole('button', { name: 'Подобрать подрядчиков', exact: true }).click()
@@ -45,7 +34,6 @@ test('matched order, count, descriptions, annotations and accessible desktop', a
   await page.route('**/api/recommend', async (route) => {
     payload = route.request().postDataJSON()
     const response = makeMockResponse(payload as typeof mockQuery)
-    response.cards.push({ ...mockCards[0], id: 'extra-4', name: 'Четвёртый кандидат' })
     await route.fulfill({ json: response })
   })
   await search(page)
@@ -63,6 +51,18 @@ test('matched order, count, descriptions, annotations and accessible desktop', a
   ).toEqual([])
   await page.locator('h1').click()
   await page.screenshot({ path: 'test-results/screenshots/matched-desktop.png', fullPage: true })
+})
+
+test('rejects a server response containing a fourth exact candidate', async ({ page }) => {
+  await prepare(page)
+  await page.route('**/api/recommend', (route) => {
+    const response = makeMockResponse(route.request().postDataJSON())
+    response.cards.push({ ...response.cards[0], id: 'extra-4' })
+    return route.fulfill({ json: response })
+  })
+  await search(page)
+  await expect(page.getByRole('alert')).toContainText('Не удалось прочитать ответ сервиса')
+  await expect(page.locator('article')).toHaveCount(0)
 })
 for (const scenario of ['one', 'two', 'no_category', 'no_match', 'fallback'] as const) {
   test('response state: ' + scenario, async ({ page }) => {

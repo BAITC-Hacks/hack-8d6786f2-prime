@@ -1,5 +1,6 @@
 """Application factory: configuration, middleware, API and the built web interface."""
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
@@ -23,7 +24,14 @@ def create_app(csv_path: Path | None = None, settings: Settings | None = None,
     paths.load_environment()
     store = Store(db_path or paths.database, csv_path or paths.seed)
     explainer = Explainer(settings or Settings.from_env())
-    app = FastAPI(title="Подбор подрядчиков", version="3.0.0")
+    @asynccontextmanager
+    async def lifespan(app):
+        try:
+            yield
+        finally:
+            await explainer.aclose()
+
+    app = FastAPI(title="Подбор подрядчиков", version="3.1.0", lifespan=lifespan)
     app.state.catalog = store.snapshot()
     app.state.store = store
     app.state.explainer = explainer

@@ -86,10 +86,10 @@ class Catalog:
 
     def _set_records(self, records, vocabulary=None):
         self.records = tuple(records)
-        self.cities = sorted({r.city for r in records}) if vocabulary is None else vocabulary["cities"]
-        self.categories = sorted({c for r in records for c in r.categories}) if vocabulary is None else vocabulary["categories"]
-        self.event_types = sorted({c for r in records for c in r.event_formats}) if vocabulary is None else vocabulary["event_types"]
-        self.languages = sorted({c for r in records for c in r.languages}) if vocabulary is None else vocabulary["languages"]
+        self.cities = tuple(sorted({r.city for r in records}) if vocabulary is None else vocabulary["cities"])
+        self.categories = tuple(sorted({c for r in records for c in r.categories}) if vocabulary is None else vocabulary["categories"])
+        self.event_types = tuple(sorted({c for r in records for c in r.event_formats}) if vocabulary is None else vocabulary["event_types"])
+        self.languages = tuple(sorted({c for r in records for c in r.languages}) if vocabulary is None else vocabulary["languages"])
 
     @classmethod
     def from_records(cls, records, vocabulary):

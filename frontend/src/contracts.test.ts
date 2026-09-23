@@ -86,14 +86,14 @@ describe('API contract and form', () => {
       false,
     )
   })
-  it('strips unknown suggestion fields so they cannot modify the form', () => {
-    const result = recommendationSchema.parse({
-      ...makeMockResponse(),
+  it('rejects unknown suggestion fields so they cannot modify the form', () => {
+    const result = recommendationSchema.safeParse({
+      ...makeMockResponse(mockQuery, 'no_match'),
       suggestions: [{ label: 'Другая дата', changes: { date: '2026-12-01', api_key: 'hidden' } }],
     })
-    expect(result.suggestions[0].changes).toEqual({ date: '2026-12-01' })
+    expect(result.success).toBe(false)
   })
-  it('accepts v1 responses and optional or empty v2 alternatives', () => {
+  it('accepts current responses with optional or empty alternatives', () => {
     expect(recommendationSchema.safeParse(makeMockResponse()).success).toBe(true)
     expect(
       recommendationSchema.safeParse({ ...makeMockResponse(), alternatives: [] }).success,

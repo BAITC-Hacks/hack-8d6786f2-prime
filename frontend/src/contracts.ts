@@ -1,4 +1,8 @@
 import { z } from 'zod'
+import type { components, paths } from './generated/api'
+
+type ServerRecommendation =
+  paths['/api/recommend']['post']['responses'][200]['content']['application/json']
 
 const isoDate = z.iso.date()
 export const querySchema = z.object({
@@ -38,6 +42,10 @@ const alternativeChangesSchema = querySchema
   .pick({ date: true, budget_kzt: true, language: true, duration_hours: true })
   .partial()
   .strict()
+  .refine(
+    (changes) => Object.keys(changes).length > 0,
+    'At least one changed condition is required',
+  )
 export const alternativeSchema = z
   .object({
     card: cardSchema,
@@ -53,7 +61,7 @@ export const alternativeSchema = z
       )
       .min(1)
       .max(4),
-    explanation_mode: z.enum(['llm', 'fallback']),
+    explanation_mode: z.literal('fallback'),
   })
   .refine(
     (value) => {
@@ -68,41 +76,145 @@ export const alternativeSchema = z
     },
     { message: 'Every alternative change must be explained exactly once' },
   )
-export const recommendationSchema = z
+export const assessmentSchema = z
   .object({
-    status: z.enum(['matched', 'no_category', 'no_match']),
-    query: querySchema,
-    total_in_category: z.number().int().nonnegative(),
-    eligible_count: z.number().int().nonnegative(),
-    cards: z.array(cardSchema),
-    summary: z.string(),
-    rejections: z.object({
-      busy: z.number().int().nonnegative(),
-      budget: z.number().int().nonnegative(),
-      event_type: z.number().int().nonnegative(),
-      language: z.number().int().nonnegative(),
-      duration: z.number().int().nonnegative(),
-    }),
-    suggestions: z.array(z.object({ label: z.string(), changes: querySchema.partial() })),
-    alternatives: z.array(alternativeSchema).max(3).optional(),
-    meta: z.object({
-      dataset_version: z.string(),
-      explanation_mode: z.enum(['llm', 'fallback']),
-      latency_ms: z.number().nonnegative(),
-    }),
+    id: z.string(),
+    name: z.string(),
+    status: z.enum(['selected', 'not_selected', 'excluded']),
+    reasons: z.array(z.enum(['busy', 'budget', 'event_type', 'language', 'duration'])),
+    rank: z.number().int().positive().nullable(),
   })
+  .refine(
+    (row) =>
+      new Set(row.reasons).size === row.reasons.length &&
+      (row.status === 'excluded'
+        ? row.reasons.length > 0 && row.rank === null
+        : row.reasons.length === 0 &&
+          row.rank !== null &&
+          row.rank <= 3 === (row.status === 'selected')),
+  )
+
+const recommendationBase = z.object({
+  query: querySchema,
+  total_in_category: z.number().int().nonnegative(),
+  eligible_count: z.number().int().nonnegative(),
+  cards: z.array(cardSchema).max(3),
+  assessments: z.array(assessmentSchema),
+  summary: z.string(),
+  rejections: z.object({
+    busy: z.number().int().nonnegative(),
+    budget: z.number().int().nonnegative(),
+    event_type: z.number().int().nonnegative(),
+    language: z.number().int().nonnegative(),
+    duration: z.number().int().nonnegative(),
+  }),
+  suggestions: z.array(z.object({ label: z.string(), changes: alternativeChangesSchema })),
+  alternatives: z.array(alternativeSchema).max(3).optional(),
+  meta: z.object({
+    dataset_version: z.string(),
+    explanation_mode: z.enum(['llm', 'fallback']),
+    latency_ms: z.number().nonnegative(),
+    ai: z
+      .object({
+        cache_hit: z.boolean(),
+        shared_inflight: z.boolean(),
+        quality_repaired: z.boolean(),
+        fallback_reason: z
+          .enum([
+            'no_candidates',
+            'not_configured',
+            'circuit_open',
+            'overloaded',
+            'rate_limit',
+            'session_budget',
+            'timeout',
+            'provider_http',
+            'provider_network',
+            'invalid_response',
+          ])
+          .nullable(),
+        elapsed_ms: z.number().int().nonnegative(),
+      })
+      .optional(),
+  }),
+})
+
+export const recommendationSchema = z
+  .discriminatedUnion('status', [
+    recommendationBase.extend({
+      status: z.literal('matched'),
+      cards: z.array(cardSchema).min(1).max(3),
+    }),
+    recommendationBase.extend({
+      status: z.literal('no_match'),
+      eligible_count: z.literal(0),
+      cards: z.array(cardSchema).max(0),
+    }),
+    recommendationBase.extend({
+      status: z.literal('no_category'),
+      total_in_category: z.literal(0),
+      eligible_count: z.literal(0),
+      cards: z.array(cardSchema).max(0),
+    }),
+  ])
   .refine(
     (data) =>
       data.status === 'matched'
         ? data.eligible_count > 0 &&
           data.cards.length > 0 &&
-          data.cards.length <= data.eligible_count
+          data.cards.length === Math.min(3, data.eligible_count)
         : data.eligible_count === 0 && data.cards.length === 0,
     { message: 'Inconsistent recommendation status' },
   )
-  .refine((data) => !data.alternatives?.length || data.status === 'no_match', {
-    message: 'Alternatives are only valid for no_match',
-  })
+  .refine(
+    (data) => !(data.alternatives?.length || data.suggestions.length) || data.status === 'no_match',
+    {
+      message: 'Alternatives are only valid for no_match',
+    },
+  )
+  .refine(
+    (data) =>
+      data.total_in_category >= data.eligible_count &&
+      (data.status === 'no_category' ? data.total_in_category === 0 : data.total_in_category > 0) &&
+      data.assessments.length === data.total_in_category &&
+      new Set(data.assessments.map((row) => row.id)).size === data.assessments.length &&
+      Object.entries(data.rejections).every(
+        ([reason, count]) =>
+          count ===
+          data.assessments.filter((row) => row.reasons.some((value) => value === reason)).length,
+      ),
+    'Counts must agree with candidate assessments',
+  )
+  .refine((data) => {
+    const eligible = data.assessments
+      .filter((row) => row.rank !== null)
+      .sort((a, b) => a.rank! - b.rank!)
+    return (
+      eligible.length === data.eligible_count &&
+      eligible.every((row, index) => row.rank === index + 1) &&
+      data.cards.every(
+        (card, index) =>
+          card.id === eligible[index]?.id &&
+          card.city === data.query.city &&
+          card.categories.includes(data.query.category) &&
+          card.available_on === data.query.date &&
+          card.price_from_kzt <= data.query.budget_kzt &&
+          (!data.query.language || card.languages.includes(data.query.language)) &&
+          (data.query.duration_hours === null ||
+            card.max_hours === null ||
+            data.query.duration_hours <= card.max_hours),
+      )
+    )
+  }, 'Cards must match the declared query and first eligible ranks')
+  .refine(
+    (data) =>
+      data.suggestions.every((suggestion) =>
+        Object.entries(suggestion.changes).every(
+          ([key, value]) => value !== data.query[key as keyof typeof suggestion.changes],
+        ),
+      ),
+    'Suggestion must change its conditions',
+  )
   .refine(
     (data) =>
       (data.alternatives ?? []).every(
@@ -115,11 +227,11 @@ export const recommendationSchema = z
           ),
       ),
     { message: 'Alternative must preserve the requested service and identify actual changes' },
-  )
+  ) satisfies z.ZodType<ServerRecommendation>
 
-export type Options = z.infer<typeof optionsSchema>
-export type Query = z.infer<typeof querySchema>
-export type Contractor = z.infer<typeof cardSchema>
+export type Options = components['schemas']['Options']
+export type Query = Required<components['schemas']['Query']>
+export type Contractor = components['schemas']['Card']
 export type Recommendation = z.infer<typeof recommendationSchema>
 export type Suggestion = Recommendation['suggestions'][number]
 export type FieldName = keyof Query
