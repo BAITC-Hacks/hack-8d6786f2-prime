@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   applicationPayload,
+  applicationSchema,
   blankApplication,
   platformApi,
   PlatformError,
@@ -76,6 +77,27 @@ describe('contractor application validation', () => {
       ]),
     )
   })
+  it.each([['Ведущий'], ['Фотограф'], ['Видеограф'], ['Ведущий', 'Декоратор'], ['Новая услуга']])(
+    'requires a numeric duration for presence services: %j',
+    (...categories) => {
+      const form = { ...valid(), categories, max_hours: '' }
+      const options = { ...mockOptions, categories: [...mockOptions.categories, ...categories] }
+      expect(validateApplication(form, options).max_hours).toContain('больше 0')
+      expect(applicationSchema.safeParse(applicationPayload(form)).success).toBe(false)
+      expect(validateApplication({ ...form, max_hours: '2,5' }, options)).toEqual({})
+    },
+  )
+  it.each([
+    ['Флорист'],
+    ['Декоратор'],
+    ['Подарки и сувениры'],
+    ['Флорист', 'Декоратор', 'Подарки и сувениры'],
+  ])('allows inapplicable duration only for non-presence services: %j', (...categories) => {
+    const form = { ...valid(), categories, max_hours: '' }
+    const options = { ...mockOptions, categories: [...mockOptions.categories, ...categories] }
+    expect(validateApplication(form, options)).toEqual({})
+    expect(applicationSchema.parse(applicationPayload(form)).max_hours).toBeNull()
+  })
 })
 describe('platform API error handling', () => {
   it('maps a duplicate response without displaying a private server body', async () => {
@@ -92,20 +114,18 @@ describe('platform API error handling', () => {
     )
   })
   it('sends admin credentials only in authorization header', async () => {
-    const fetcher = vi
-      .fn()
-      .mockResolvedValue(
-        new Response(
-          JSON.stringify({
-            items: [],
-            total: 0,
-            offset: 0,
-            limit: 12,
-            counts: { pending: 0, approved: 0, rejected: 0 },
-            storage: 'sqlite',
-          }),
-        ),
-      )
+    const fetcher = vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          items: [],
+          total: 0,
+          offset: 0,
+          limit: 12,
+          counts: { pending: 0, approved: 0, rejected: 0 },
+          storage: 'sqlite',
+        }),
+      ),
+    )
     vi.stubGlobal('fetch', fetcher)
     await platformApi.list('test-only-token', 'pending')
     const [url, init] = fetcher.mock.calls[0]
@@ -129,5 +149,27 @@ describe('platform API error handling', () => {
     await expect(platformApi.apply(applicationPayload(valid()))).rejects.toMatchObject<
       Partial<PlatformError>
     >({ status: 422, fields: { contact_email: expect.stringContaining('email') } })
+  })
+  it('identifies an invalid legacy profile using only the agreed conflict message', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(
+        new Response(
+          JSON.stringify({
+            detail:
+              'Анкета не соответствует текущим правилам заполнения. Нужно подать исправленную анкету перед одобрением.',
+          }),
+          { status: 409 },
+        ),
+      ),
+    )
+    await expect(
+      platformApi.moderate(
+        'test-only-token',
+        { id: 'USR-old', revision: 1 } as Parameters<typeof platformApi.moderate>[1],
+        'approved',
+        '',
+      ),
+    ).rejects.toMatchObject({ status: 409, reason: 'invalid_profile' })
   })
 })

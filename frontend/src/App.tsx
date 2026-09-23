@@ -121,7 +121,8 @@ function ContractorCard({
       <div className="facts">
         <span className="available">
           <Check size={14} aria-hidden="true" />
-          Доступен {formatDate(card.available_on)}
+          {alternative ? 'Предлагаемая дата: ' : 'Доступен '}
+          {formatDate(card.available_on)}
         </span>
         {card.languages.length > 0 && (
           <span>
@@ -136,6 +137,9 @@ function ContractorCard({
           </span>
         )}
       </div>
+      {alternative && (
+        <p className="alternative-description">{card.description || 'Описание не указано.'}</p>
+      )}
       <div className="explanation">
         <h4>
           <Sparkles size={14} aria-hidden="true" />
@@ -358,6 +362,12 @@ function Results({
                     </ul>
                   </div>
                   <ContractorCard card={alternative.card} index={index + 10} alternative />
+                  {alternative.explanation_mode === 'fallback' && (
+                    <p className="alternative-mode">
+                      <Info size={14} aria-hidden="true" />
+                      Базовое объяснение по данным каталога.
+                    </p>
+                  )}
                   <button
                     className="secondary-button apply-alternative"
                     onClick={() =>
@@ -377,7 +387,7 @@ function Results({
               </p>
             </section>
           )}
-          {result.suggestions.length > 0 && !result.alternatives?.length && (
+          {result.suggestions.length > 0 && (
             <div className="suggestions">
               <h3>Можно попробовать иначе</h3>
               <p>Нажатие изменит указанные поля. Затем запустите подбор.</p>
@@ -662,21 +672,21 @@ export default function App({ client = api }: { client?: Api }) {
               aria-current={route === 'search' ? 'page' : undefined}
               href="#/"
             >
-              Подбор подрядчиков
+              Подбор
             </a>
             <a
               className={route === 'apply' ? 'active-nav' : ''}
               aria-current={route === 'apply' ? 'page' : undefined}
               href="#/apply"
             >
-              Стать подрядчиком
+              Подрядчикам
             </a>
             <a
               className={route === 'admin' ? 'active-nav' : ''}
               aria-current={route === 'admin' ? 'page' : undefined}
               href="#/admin"
             >
-              Администратор
+              Администратору
             </a>
             {route === 'search' && (
               <button onClick={() => dialog.current?.showModal()}>
@@ -688,7 +698,23 @@ export default function App({ client = api }: { client?: Api }) {
           <span className="header-mark">Создано для ваших событий</span>
         </div>
       </header>
-      {route === 'apply' ? (
+      {isDemo && route !== 'search' ? (
+        <main id="platform-main" className="platform-main">
+          <div className="platform-heading">
+            <h1>Демонстрация подбора</h1>
+          </div>
+          <section className="platform-panel">
+            <h2>Анкеты доступны в обычном режиме</h2>
+            <p className="section-intro">
+              В демонстрации используются вымышленные примеры. Отправка анкет и вход в панель здесь
+              отключены.
+            </p>
+            <a className="secondary-button" href="#/">
+              Вернуться к подбору
+            </a>
+          </section>
+        </main>
+      ) : route === 'apply' ? (
         <ApplicationPage
           options={options}
           error={optionsError}

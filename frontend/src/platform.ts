@@ -1,7 +1,12 @@
 import { z } from 'zod'
-import type { Options } from './contracts'
+import { formatDate, type Options } from './contracts'
 
-export const applicationSchema = z.object({
+// Contract platform-v2 at c6e15d2: the same duration rule applies to both write endpoints.
+const nonPresenceCategories = new Set(['Флорист', 'Декоратор', 'Подарки и сувениры'])
+export const requiresPresenceDuration = (categories: string[]) =>
+  categories.some((category) => !nonPresenceCategories.has(category))
+
+const applicationFieldsSchema = z.object({
   name: z.string().trim().min(2).max(120),
   city: z.string().min(1),
   categories: z.array(z.string()).min(1),
@@ -15,9 +20,13 @@ export const applicationSchema = z.object({
     .string()
     .trim()
     .max(254)
-    .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
+    .regex(/^[^@\s]+@[^@\s.]+(?:\.[^@\s.]+)+$/),
   synthetic: z.boolean(),
 })
+export const applicationSchema = applicationFieldsSchema.refine(
+  (value) => value.max_hours !== null || !requiresPresenceDuration(value.categories),
+  { path: ['max_hours'], message: 'Presence-based services require a numeric duration' },
+)
 export type Application = z.infer<typeof applicationSchema>
 export type ApplicationField = keyof Application
 export type ApplicationErrors = Partial<Record<ApplicationField, string>>
@@ -46,7 +55,8 @@ export const applicationMessages: Record<ApplicationField, string> = {
   event_formats: 'Выберите хотя бы один формат мероприятия.',
   languages: 'Выберите хотя бы один язык.',
   price_from_kzt: 'Цена должна быть целой: от 1 до 1 000 000 000 ₸.',
-  max_hours: 'Укажите от 0 до 24 часов, не включая 0, или оставьте поле пустым.',
+  max_hours:
+    'Укажите число больше 0 и не больше 24. Пустое поле допустимо только для флориста, декоратора и подарков.',
   busy_dates: 'Укажите до 100 уникальных дат YYYY-MM-DD в доступном календаре.',
   description: 'Расскажите об услугах: от 30 до 3000 символов.',
   contact_email: 'Укажите корректный email, не больше 254 символов.',
@@ -54,14 +64,39 @@ export const applicationMessages: Record<ApplicationField, string> = {
 }
 export function applicationPayload(form: ApplicationForm): Application {
   return {
-    ...form,
     name: form.name.trim(),
+    city: form.city,
+    categories: form.categories,
+    event_formats: form.event_formats,
+    languages: form.languages,
+    synthetic: form.synthetic,
     description: form.description.trim(),
     contact_email: form.contact_email.trim(),
     price_from_kzt: Number(form.price_from_kzt.replace(/\s/g, '')),
     max_hours: form.max_hours.trim() ? Number(form.max_hours.replace(',', '.')) : null,
-    busy_dates: form.busy_dates.trim() ? form.busy_dates.split(/[,;\s]+/).filter(Boolean) : [],
+    busy_dates: parseBusyDates(form.busy_dates),
   }
+}
+export function parseBusyDates(value: string): string[] {
+  return value.trim() ? value.split(/[,;\s]+/).filter(Boolean) : []
+}
+export function busyDatesError(value: string, calendar: Options['calendar']): string | undefined {
+  const dates = parseBusyDates(value)
+  if (dates.length > 100) return 'Можно указать не больше 100 занятых дат.'
+  if (dates.some((date) => !z.iso.date().safeParse(date).success))
+    return (
+      'Проверьте даты: нужен формат ГГГГ-ММ-ДД и существующий день, например ' + calendar.min + '.'
+    )
+  if (new Set(dates).size !== dates.length)
+    return 'В списке есть повторяющиеся даты. Оставьте каждую дату один раз.'
+  if (dates.some((date) => date < calendar.min || date > calendar.max))
+    return (
+      'Все занятые даты должны быть в диапазоне ' +
+      formatDate(calendar.min, true) +
+      ' — ' +
+      formatDate(calendar.max, true) +
+      '.'
+    )
 }
 export function validateApplication(form: ApplicationForm, options: Options): ApplicationErrors {
   const payload = applicationPayload(form)
@@ -85,19 +120,27 @@ export function validateApplication(form: ApplicationForm, options: Options): Ap
     )
       errors[key] = applicationMessages[key]
   }
-  if (
-    new Set(payload.busy_dates).size !== payload.busy_dates.length ||
-    payload.busy_dates.some((date) => date < options.calendar.min || date > options.calendar.max)
-  )
-    errors.busy_dates = applicationMessages.busy_dates
+  const calendarError = busyDatesError(form.busy_dates, options.calendar)
+  if (calendarError) errors.busy_dates = calendarError
+  for (const key of ['name', 'description', 'contact_email'] as const) {
+    const invalid = [...payload[key]].some((char) => {
+      const code = char.charCodeAt(0)
+      return code === 127 || (code < 32 && !(key === 'description' && '\n\r\t'.includes(char)))
+    })
+    if (invalid) errors[key] = 'Удалите недопустимые управляющие символы из текста.'
+  }
   return errors
 }
-export const profileSchema = applicationSchema.omit({ contact_email: true }).extend({
+// Imported and older profiles remain readable even when current write rules are stricter.
+export const profileSchema = applicationFieldsSchema.omit({ contact_email: true }).extend({
   name: z.string(),
   description: z.string(),
   categories: z.array(z.string()),
   event_formats: z.array(z.string()),
   languages: z.array(z.string()),
+  price_from_kzt: z.number().int().positive(),
+  max_hours: z.number().positive().nullable(),
+  busy_dates: z.array(z.iso.date()),
   contact_email: z.string().nullable(),
   id: z.string(),
   status: z.enum(['pending', 'approved', 'rejected']),
@@ -135,6 +178,7 @@ export class PlatformError extends Error {
     message: string,
     public status = 0,
     public fields: ApplicationErrors = {},
+    public reason?: 'invalid_profile',
   ) {
     super(message)
     this.name = 'PlatformError'
@@ -149,6 +193,7 @@ async function request<T>(
   const timeout = setTimeout(() => controller.abort(), 20_000)
   try {
     const response = await fetch(path, {
+      cache: 'no-store',
       method: init.method || 'GET',
       headers: {
         Accept: 'application/json',
@@ -160,8 +205,11 @@ async function request<T>(
     })
     if (!response.ok) {
       const fields: ApplicationErrors = {}
+      const body: unknown =
+        response.status === 422 || response.status === 409
+          ? await response.json().catch(() => null)
+          : null
       if (response.status === 422) {
-        const body: unknown = await response.json().catch(() => null)
         const parsed = z
           .object({
             detail: z.array(z.object({ loc: z.array(z.union([z.string(), z.number()])) })),
@@ -175,6 +223,16 @@ async function request<T>(
             if (field) fields[field] = applicationMessages[field]
           }
       }
+      // Recognize one agreed server message; never echo arbitrary response bodies or secrets.
+      const invalidProfileMessage =
+        'Анкета не соответствует текущим правилам заполнения. Нужно подать исправленную анкету перед одобрением.'
+      if (
+        response.status === 409 &&
+        path.endsWith('/moderate') &&
+        z.object({ detail: z.literal(invalidProfileMessage) }).safeParse(body).success
+      ) {
+        throw new PlatformError(invalidProfileMessage, 409, {}, 'invalid_profile')
+      }
       const message =
         (
           {
@@ -186,7 +244,9 @@ async function request<T>(
                 ? 'Такая анкета уже отправлена. Дождитесь решения администратора.'
                 : 'Данные изменились или такая анкета уже существует. Обновите список перед повторным действием.',
             422: 'Проверьте отмеченные поля и повторите действие.',
-            503: 'Панель пока недоступна: администратор должен настроить доступ на сервере.',
+            503: path.startsWith('/api/admin/')
+              ? 'Панель пока недоступна: администратор должен настроить доступ на сервере.'
+              : 'Приём анкет временно недоступен. Введённые данные сохранены на странице; попробуйте позже.',
           } as Record<number, string>
         )[response.status] || 'Сервис временно недоступен. Попробуйте ещё раз.'
       throw new PlatformError(message, response.status, fields)

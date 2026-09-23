@@ -1724,6 +1724,7 @@ footer {
   align-items: start;
 }
 .application-guide {
+  --muted: #59674f;
   padding: 26px;
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -1809,6 +1810,57 @@ footer {
 .application-form .form-grid {
   align-items: start;
 }
+.busy-date-picker {
+  display: flex;
+  align-items: end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.busy-date-picker > div {
+  flex: 1;
+  min-width: 165px;
+}
+.busy-date-picker .secondary-button {
+  margin: 0;
+  min-height: 44px;
+}
+.busy-date-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+  padding: 0;
+  margin: 12px 0;
+}
+.busy-date-tags li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 10px;
+  background: #eaf0e1;
+  border: 1px solid #c4d0b9;
+  border-radius: 8px;
+  font-size: 12px;
+}
+.busy-date-tags button {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  min-height: 34px;
+  background: transparent;
+  border: 0;
+}
+.application-form .field:has(#application-description) .character-count {
+  position: static;
+  display: block;
+  text-align: right;
+  margin-top: 5px;
+}
+.application-form .choice-chip:has(input:focus-visible) {
+  outline: 3px solid #668343;
+  outline-offset: 3px;
+}
 .platform-panel input:not([type='checkbox']),
 .platform-panel select,
 .platform-panel textarea,
@@ -1871,6 +1923,7 @@ footer {
   accent-color: var(--green);
   width: 16px;
   height: 16px;
+  min-height: 16px;
   flex-shrink: 0;
   margin: 0;
 }
@@ -2089,6 +2142,21 @@ footer {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+.profile-row-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 10px;
+  color: #52654b;
+  font-size: 10px;
+  line-height: 1.6;
+}
+.profile-row-meta > span + span {
+  border-left: 1px solid #b8c7a9;
+  padding-left: 10px;
+}
+.profile-row:focus-visible {
+  outline-offset: -4px;
+}
 .status-pill {
   display: inline-block;
   width: fit-content;
@@ -2302,6 +2370,26 @@ footer {
   border-radius: 0;
   box-shadow: none;
   margin: 0;
+}
+.alternative-description {
+  font-size: 13px;
+  line-height: 1.7;
+  color: #53634c;
+  margin-bottom: 14px;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.alternative-mode {
+  display: flex;
+  gap: 6px;
+  align-items: start;
+  margin: 0 22px 16px;
+  color: #5b674e;
+  font-size: 11px;
+  line-height: 1.6;
 }
 .alternative-option .avatar {
   background: #e5eadb;
