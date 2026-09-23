@@ -1,28 +1,24 @@
 """One live model request with the real catalogue; no secret values are printed."""
 import asyncio
 import json
-import os
 import time
-from pathlib import Path
-
-from dotenv import load_dotenv
 
 from .explainer import Explainer, Settings
 from .models import Query
 from .recommender import select
 from .storage import Store
+from .runtime import RuntimePaths
 
 
 async def check() -> int:
-    root = Path(__file__).resolve().parents[1]
-    load_dotenv(root / "backend" / ".env", override=False)
+    paths = RuntimePaths.discover()
+    paths.load_environment()
     settings = Settings.from_env()
     if not settings.available:
         print(json.dumps({"ok": False, "provider": settings.provider,
                           "message": "Заполните ключ и модель в backend/.env. Значения ключей не выводятся."}, ensure_ascii=False))
         return 2
-    seed = Path(os.getenv("CONTRACTORS_CSV") or root / "data" / "contractors.csv")
-    catalog = Store(Path(os.getenv("DATABASE_PATH") or root / "data" / "catalog.sqlite3"), seed).snapshot()
+    catalog = Store(paths.database, paths.seed).snapshot()
     query = Query(city="Алматы", date="2026-11-14", event_type="корпоратив", category="Ведущий",
                   budget_kzt=1500000, duration_hours=6, language="русский", preferences="интеллигентный юмор")
     selected = select(catalog, query).eligible[:3]

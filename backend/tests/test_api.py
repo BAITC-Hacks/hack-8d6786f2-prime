@@ -2,7 +2,7 @@ from dataclasses import replace
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app import create_app
+from backend.application import create_app
 from backend.explainer import Settings
 from backend.models import Query
 from backend.recommender import rejection_reasons

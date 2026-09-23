@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from backend.app import create_app
+from backend.application import create_app
 from backend.explainer import Settings
 from backend.tests.test_api import BASE
 

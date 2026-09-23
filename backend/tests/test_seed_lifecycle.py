@@ -5,7 +5,7 @@ import shutil
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app import create_app
+from backend.application import create_app
 from backend.explainer import Settings
 from backend.storage import Store
 from backend.profiles import ProfileInput

@@ -2,7 +2,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app import create_app
+from backend.application import create_app
 from backend.explainer import Settings
 
 AUTH = {"Authorization": "Bearer backend-test-token-for-temporary-database"}
