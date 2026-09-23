@@ -291,7 +291,7 @@ def test_application_boundaries_and_trimming(api, created):
     item = lookup(api, pending["id"])
     assert item["name"] == "QA" and item["max_hours"] == 24
     assert set(item["busy_dates"]) == {"2026-09-23", "2026-12-31"}
-    item = post_profile(api, created, profile(max_hours=None), admin=True)
+    item = post_profile(api, created, profile(categories=["Флорист"], max_hours=None), admin=True)
     assert item["status"] == "approved" and item["max_hours"] is None and item["source"] == "admin"
 
 
